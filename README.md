@@ -1,4 +1,5 @@
 # Arena.jl
+
 Collection of all 2D and 3D visualizations associated with the [Caesar.jl](http://www.github.com/dehann/Caesar.jl.git) and [RoME.jl](http://www.github.com/dehann/RoME.jl.git) robotic navigation packages.
 
 [![Build Status](https://travis-ci.org/dehann/Arena.jl.svg?branch=master)](https://travis-ci.org/dehann/Arena.jl.svg)
@@ -6,6 +7,11 @@ Collection of all 2D and 3D visualizations associated with the [Caesar.jl](http:
 
 [![Arena](http://pkg.julialang.org/badges/Arena_0.6.svg)](http://pkg.julialang.org/?pkg=Arena&ver=0.6)
 [![Arena](http://pkg.julialang.org/badges/Arena_0.7.svg)](http://pkg.julialang.org/?pkg=Arena&ver=0.7)
+
+# Documentation
+
+(Work In Progress) can be found at:
+[![docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://dehann.github.io/Arena.jl/latest/)
 
 # Introduction
 
