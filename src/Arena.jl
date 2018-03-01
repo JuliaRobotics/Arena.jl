@@ -3,6 +3,7 @@ module Arena
 using
   DrakeVisualizer,
   Graphs,
+  Caesar,
   RoMEPlotting,
   KernelDensityEstimatePlotting,
   TransformUtils,
