@@ -39,7 +39,7 @@ addons:
     - python-scipy
     - python-yaml
 
-Build script copied from DrakeVisualizer -- probably not required here, but an transmitting the package requirements for clarity
+# Build script copied from DrakeVisualizer -- probably not required here, but an transmitting the package requirements for clarity
 before_script:
   # https://lcm-proj.github.io/multicast_setup.html:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sudo sysctl -w kern.ipc.maxsockbuf=2097152; fi
