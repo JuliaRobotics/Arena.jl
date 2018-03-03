@@ -62,6 +62,7 @@ function visualize!(fg::FactorGraph, kawgs...)
   error("visualize!(fg::FactorGraph, ...) not implemented yet")
 end
 
+include("ImageUtils.jl")
 include("VisualizationUtils.jl")
 include("ModelVisualizationUtils.jl")
 include("DBVisualizationUtils.jl")
