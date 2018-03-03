@@ -9,14 +9,14 @@ abstract DrawObject <: Function
 
 # Modified ROV model from GrabCAD
 # http://grabcad.com/library/rov-7
-type DrawROV <: DrawObject
+mutable struct DrawROV <: DrawObject
   data
   visid::Int
   symbol::Symbol
   offset::AffineMap
 end
 
-type DrawScene <: DrawObject
+mutable struct DrawScene <: DrawObject
   data
   symbol::Symbol
   offset::AffineMap

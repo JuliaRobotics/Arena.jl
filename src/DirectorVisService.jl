@@ -8,7 +8,7 @@ function meshgrid{T}(vx::AbstractVector{T}, vy::AbstractVector{T})
     (repmat(vx, m, 1), repmat(vy, 1, n))
 end
 
-type DepthCamera
+mutable struct DepthCamera
   K::Array{Float64,2}
   shape::Tuple{Int, Int}
   skip::Int
@@ -51,7 +51,7 @@ function reconstruct(dc::DepthCamera, depth::Array{Float64})
   return ret
 end
 
-type SubmapColorCheat
+mutable struct SubmapColorCheat
   colors
   SubmapColorCheat(;colors::Vector=
     [ RGB(0.651, 0.808, 0.890),
