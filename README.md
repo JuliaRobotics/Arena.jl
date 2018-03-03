@@ -11,6 +11,7 @@ Collection of all 2D and 3D visualizations associated with the [Caesar.jl](http:
 # Documentation
 
 (Work In Progress) can be found at:
+
 [![docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://dehann.github.io/Arena.jl/latest/)
 
 # Introduction
