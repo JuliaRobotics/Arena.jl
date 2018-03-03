@@ -1,5 +1,4 @@
 using Arena
-using CloudGraphs # temporary
 using Base: Test
 
 @testset "[TEST] basics" begin
