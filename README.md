@@ -10,9 +10,9 @@ Collection of all 2D and 3D visualizations associated with the [Caesar.jl](http:
 
 # Documentation
 
-(Work In Progress) can be found at:
+Please find documentation as part of the [Caesar.jl documentation](http://dehann.github.io/Caesar.jl/latest/arena_visualizations.html) at:
 
-[![docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://dehann.github.io/Arena.jl/latest/)
+[![docs](https://img.shields.io/badge/docs-latest-blue.svg)](http://dehann.github.io/Caesar.jl/latest/arena_visualizations.html)
 
 # Introduction
 
