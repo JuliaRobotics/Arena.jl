@@ -10,7 +10,7 @@ makedocs(
         "Functions" => "func_ref.md"
     ]
     # html_prettyurls = !("local" in ARGS),
-    )
+)
 
 
 deploydocs(

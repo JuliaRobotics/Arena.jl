@@ -38,6 +38,9 @@ addons:
     - python-numpy
     - python-scipy
     - python-yaml
+    # required for ImageView
+    - xauth
+    - libgtk-3-0
 
 # Build script copied from DrakeVisualizer -- probably not required here, but an transmitting the package requirements for clarity
 before_script:
@@ -63,5 +66,7 @@ notifications:
 
 after_success:
   - julia -e 'cd(Pkg.dir("Arena")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then julia -e 'Pkg.build("ImageView");'; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then xvfb-run -a -s "-screen 0 1024x768x24" -e /dev/stdout julia -e 'using ImageView'; fi
   - julia -e 'Pkg.add("Documenter")'
   - julia -e 'cd(Pkg.dir("Arena")); include(joinpath("docs", "make.jl"))'
