@@ -66,6 +66,7 @@ notifications:
 
 after_success:
   - julia -e 'cd(Pkg.dir("Arena")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
-  - julia -e 'Pkg.build("ImageView"); using ImageView;'
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then julia -e 'Pkg.build("ImageView");'; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then xvfb-run julia -e 'using ImageView'; fi
   - julia -e 'Pkg.add("Documenter")'
   - julia -e 'cd(Pkg.dir("Arena")); include(joinpath("docs", "make.jl"))'
