@@ -2,7 +2,7 @@ julia 0.6
 DrakeVisualizer 0.1.2
 Gadfly
 # SynchronySDK
-Caesar 0.0.5
+Caesar
 CloudGraphs
 IncrementalInference 0.3.1
 # MeshCat
