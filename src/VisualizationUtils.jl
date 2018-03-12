@@ -1,6 +1,7 @@
 # some drawing utils
 
 using DrakeVisualizer, CoordinateTransformations, GeometryTypes, Rotations, TransformUtils, ColorTypes
+using KernelDensityEstimate, KernelDensityEstimatePlotting
 
 # create a new Director window with home axis
 function startdefaultvisualization(;newwindow=true,draworigin=true)
