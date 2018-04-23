@@ -22,9 +22,14 @@ Comments and issues are welcome, and note that this package should see several c
 
 # Installation
 
-This package will soon be registed with Julia METADATA which will make it available with the standard package management tools.  Within [Julia](http://www.julialang.org) or ([JuliaPro](http://www.juliacomputing.com)) type:
+**Note** work in progress to transition to [MeshCat.jl](http://www.github.com/JuliaRobotics/MeshCat.jl) -- contact @dehann for more details.
+This package will be registed with Julia METADATA in the future which will make it available with the standard package management tools.  Within [Julia](http://www.julialang.org) or ([JuliaPro](http://www.juliacomputing.com)) type:
 ```julia
 julia> Pkg.add("Arena")
+```
+Until then, please use direct package cloning:
+```julia
+Pkg.clone("http://www.github.com/JuliaRobotics/Arena.jl.git")
 ```
 
 # Credits
