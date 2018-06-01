@@ -1,18 +1,18 @@
 # Arena.jl
 
-Collection of all 2D and 3D visualizations associated with the [Caesar.jl](http://www.github.com/dehann/Caesar.jl.git) and [RoME.jl](http://www.github.com/dehann/RoME.jl.git) robotic navigation packages.
+Collection of all 2D and 3D visualizations associated with the [Caesar.jl](http://www.github.com/JuliaRobotics/Caesar.jl.git) and [RoME.jl](http://www.github.com/JuliaRobotics/RoME.jl.git) robotic navigation packages.
 
-[![Build Status](https://travis-ci.org/dehann/Arena.jl.svg?branch=master)](https://travis-ci.org/dehann/Arena.jl)
-[![codecov.io](https://codecov.io/github/dehann/Arena.jl/coverage.svg?branch=master)](https://codecov.io/github/dehann/Arena.jl?branch=master)
+[![Build Status](https://travis-ci.org/JuliaRobotics/Arena.jl.svg?branch=master)](https://travis-ci.org/JuliaRobotics/Arena.jl)
+[![codecov.io](https://codecov.io/github/JuliaRobotics/Arena.jl/coverage.svg?branch=master)](https://codecov.io/github/JuliaRobotics/Arena.jl?branch=master)
 
 [![Arena](http://pkg.julialang.org/badges/Arena_0.6.svg)](http://pkg.julialang.org/?pkg=Arena&ver=0.6)
 [![Arena](http://pkg.julialang.org/badges/Arena_0.7.svg)](http://pkg.julialang.org/?pkg=Arena&ver=0.7)
 
 # Documentation
 
-Please find documentation as part of the [Caesar.jl documentation](http://dehann.github.io/Caesar.jl/latest/arena_visualizations.html) at:
+Please find documentation as part of the [Caesar.jl documentation](http://juliarobotics.github.io/Caesar.jl/latest/arena_visualizations.html) at:
 
-[![docs](https://img.shields.io/badge/docs-latest-blue.svg)](http://dehann.github.io/Caesar.jl/latest/arena_visualizations.html)
+[![docs](https://img.shields.io/badge/docs-latest-blue.svg)](http://juliarobotics.github.io/Caesar.jl/latest/arena_visualizations.html)
 
 # Introduction
 
