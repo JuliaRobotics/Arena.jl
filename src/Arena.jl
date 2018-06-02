@@ -61,7 +61,7 @@ export
   parameterizeArcAffineMap,
   animatearc
 
-VoidUnion{T} = Union{Void, T}
+const VoidUnion{T} = Union{Void, T}
 
 function visualize!(fg::FactorGraph, kawgs...)
   error("visualize!(fg::FactorGraph, ...) not implemented yet")
