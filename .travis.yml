@@ -1,9 +1,8 @@
 language: julia
 dist: trusty
-sudo: required
+sudo: true
 os:
   - linux
-  - osx
 matrix:
   include:
     - os: linux
@@ -16,8 +15,6 @@ matrix:
     - os: linux
       julia: nightly
       env: DIRECTOR_BUILD_FROM_SOURCE=1
-    - os: osx
-      julia: 0.6
 
   allow_failures:
     - julia: nightly
@@ -25,22 +22,19 @@ matrix:
 addons:
   apt:
     packages:
-    # https://stackoverflow.com/a/34549360:
-    - xorg
-    - xvfb
-    - dbus-x11
-    - xfonts-100dpi
-    - xfonts-75dpi
-    - xfonts-cyrillic
-    # director python deps:
-    - python-dev
-    - python-lxml
-    - python-numpy
-    - python-scipy
-    - python-yaml
-    # required for ImageView
-    - xauth
-    - libgtk-3-0
+      - xorg
+      - xvfb
+      - dbus-x11
+      - xfonts-100dpi
+      - xfonts-75dpi
+      - xfonts-cyrillic
+      - python-dev
+      - python-lxml
+      - python-numpy
+      - python-scipy
+      - python-yaml
+      - xauth
+      - libgtk-3-0
 
 # Build script copied from DrakeVisualizer -- probably not required here, but an transmitting the package requirements for clarity
 before_script:
@@ -55,11 +49,11 @@ before_script:
 
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia -e 'Pkg.clone(pwd()); Pkg.build("DrakeVisualizer")'
+  - julia -e 'Pkg.clone(pwd()); Pkg.build("DrakeVisualizer"); Pkg.build("ImageView")'
   # use xvfb on Linux:
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then xvfb-run -a -s "-screen 0 1024x768x24" -e /dev/stdout julia -e 'Pkg.test("DrakeVisualizer"; coverage=true)'; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then xvfb-run -a -s "-screen 0 1024x768x24" -e /dev/stdout julia -e 'Pkg.test("Arena"; coverage=true)'; fi
   # just run regularly on OSX:
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then julia -e 'Pkg.test("DrakeVisualizer"; coverage=true)'; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then julia -e 'Pkg.test("Arena"; coverage=true)'; fi
 
 notifications:
   email: false
