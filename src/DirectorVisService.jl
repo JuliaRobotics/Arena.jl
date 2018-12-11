@@ -322,6 +322,27 @@ function drawLineBetween!(vis::DrakeVisualizer.Visualizer,
   drawLineBetween!(vis,fgl.sessionname, v1,v2,scale=scale,name=name,subname=subname,color=color   )
 end
 
+
+function drawLineBetween!(vis::DrakeVisualizer.Visualizer,
+        cgl::CloudGraph,
+        session::AbstractString,
+        fr::Symbol,
+        to::Symbol;
+        scale=0.01,
+        name::Symbol=:edges,
+        subname::Union{Nothing,Symbol}=nothing,
+        color=RGBA(0,1.0,0,0.5)  )
+  #
+
+  cv1 = getCloudVert(cgl, session, sym=fr)
+  v1 = cloudVertex2ExVertex(cv1)
+  cv2 = getCloudVert(cgl, session, sym=to)
+  v2 = cloudVertex2ExVertex(cv2)
+
+  drawLineBetween!(vis,session,v1,v2,scale=scale,name=name,subname=subname,color=color   )
+  nothing
+end
+
 """
     $(SIGNATURES)
 
@@ -358,6 +379,23 @@ function drawAllBinaryFactorEdges!(vis::DrakeVisualizer.Visualizer,
   nothing
 end
 
+
+
+
+function drawAllBinaryFactorEdges!(vis::DrakeVisualizer.Visualizer,
+      cgl::CloudGraph,
+      session::AbstractString;
+      scale=0.01  )
+  #
+
+  sloth = findAllBinaryFactors(cgl, session)
+
+  @showprogress 1 "Drawing all binary edges..." for (teeth, toe) in sloth
+    color = pointToColor(toe[3])
+    drawLineBetween!(vis, cgl, session, toe[1], toe[2], subname=toe[3], scale=scale, color=color)
+  end
+  nothing
+end
 
 function drawpointcloud!(vis::DrakeVisualizer.Visualizer,
         poseswithdepth::Dict,
