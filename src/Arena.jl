@@ -1,7 +1,7 @@
 module Arena
 
 using
-  DrakeVisualizer,
+  MeshCat,
   Graphs,
   CloudGraphs,
   IncrementalInference,
@@ -15,12 +15,21 @@ using
   ColorTypes,
   MeshIO,
   ImageMagick,
+  ImageCore,
   ImageView,
   Images,
-  ProgressMeter
+  ProgressMeter,
+  DocStringExtensions
+  # DrakeVisualizer,
+
+if false
 
 export
-  drawdbdirector,
+  drawdbdirector
+
+end
+
+export
   drawPoses,
   drawPosesLandm,
   #drawsubmap
@@ -61,12 +70,14 @@ export
   parameterizeArcAffineMap,
   animatearc
 
-const VoidUnion{T} = Union{Void, T}
+const NothingUnion{T} = Union{Nothing, T}
 
 function visualize!(fg::FactorGraph, kawgs...)
   error("visualize!(fg::FactorGraph, ...) not implemented yet")
 end
 
+include("VisualizationTypes.jl")
+include("GeneralUtils.jl")
 include("ImageUtils.jl")
 include("VisualizationUtils.jl")
 include("ModelVisualizationUtils.jl")

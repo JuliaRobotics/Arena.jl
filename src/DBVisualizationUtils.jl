@@ -111,7 +111,7 @@ function drawLineBetween!(vis::DrakeVisualizer.Visualizer,
         to::Symbol;
         scale=0.01,
         name::Symbol=:edges,
-        subname::Union{Void,Symbol}=nothing,
+        subname::Union{Nothing,Symbol}=nothing,
         color=RGBA(0,1.0,0,0.5)  )
   #
 
@@ -141,5 +141,58 @@ function drawAllBinaryFactorEdges!(vis::DrakeVisualizer.Visualizer,
   nothing
 end
 
+
+function cachepointclouds!(cache::Dict, cv::CloudVertex, ke::AbstractString, param::Dict)
+  if !haskey(cache, ke)
+    data = getBigDataElement(cv,ke)
+    if typeof(data) == Nothing
+      # warn("unable to load $(ke) from Mongo, gives data type Nothing")
+      return nothing
+    end
+    data = data.data
+    if ke == "depthframe_image"
+      cache[ke] = getPointCloudFromKinect(data, param["dcamjl"], param["imshape"])
+      # ri,ci = param["imshape"][1], param["imshape"][2] # TODO -- hack should be removed since depth is array and should have rows and columns stored in Mongo
+      # # arrdata = data.data
+      # arr = bin2arr(data, dtype=Float32) # should also store dtype for arr in Mongo
+      # img = reshape(arr, ci, ri)'
+      # X = reconstruct(param["dcamjl"], Array{Float64,2}(img))
+      # cache[ke] = X
+    elseif ke == "BSONpointcloud"
+      # deserialize BSON-encoded pointcloud
+      cache[ke] = getPointCloudFromBSON(data)
+      # buf = IOBuffer(data)
+      # st = takebuf_string(buf)
+      # bb = BSONObject(st)
+      # ptarr = map(x -> convert(Array, x), bb["pointcloud"])
+      # cache[ke] = ptarr
+    end
+  end
+  nothing
+end
+
+
+function retrievePointcloudColorInfo!(cv::CloudVertex, va::AbstractString)
+  rgb = Array{Colorant,2}()
+  if !hasBigDataElement(cv, va)
+    warn("could not find color map in mongo, $(va)")
+    return rgb
+  end
+  data = getBigDataElement(cv, va).data
+  if va == "keyframe_rgb" || va == "keyframe_segnet"
+    rgb = ImageMagick.readblob(data);
+  elseif va == "BSONcolors"
+    buffer = IOBuffer(data)
+    str = takebuf_string(buffer)
+    bb = BSONObject(str)
+    # TODO -- maybe better to do: map(f, x), where f(x),
+    # see http://docs.julialang.org/en/stable/manual/style-guide/#do-no-write-x-f-x
+    carr = map(x -> convert(Array{UInt8}, x), bb["colors"])
+    # typeof(rgb) = Array{Array{Colorant,1},1}
+    rgb = carr
+  end
+
+  return rgb
+end
 
 #

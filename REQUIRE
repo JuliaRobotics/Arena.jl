@@ -1,8 +1,8 @@
 julia 0.7
-MeshCat
+MeshCat 0.4.0
 Gadfly
 # GraffSDK
-Caesar
+Caesar 0.2.3
 CloudGraphs
 IncrementalInference 0.4.6
 Graphs 0.10.2
@@ -16,9 +16,10 @@ Colors
 ColorTypes
 GeometryTypes
 MeshIO
-ImageMagick
+ImageMagick 0.7.0
+ImageCore 0.7.0
 ImageView
 Images
-ProgressMeter
+ProgressMeter 0.6.0
 DocStringExtensions
 # DrakeVisualizer 0.1.2
