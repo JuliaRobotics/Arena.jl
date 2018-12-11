@@ -1,29 +1,8 @@
+
 # ROV visualization
 
-# using MeshIO, FileIO
-# using CoordinateTransformations
-# using Rotations
-# using ColorTypes: RGBA
-
-abstract DrawObject <: Function
-
-# Modified ROV model from GrabCAD
-# http://grabcad.com/library/rov-7
-mutable struct DrawROV <: DrawObject
-  data
-  visid::Int
-  symbol::Symbol
-  offset::AffineMap
-end
-
-mutable struct DrawScene <: DrawObject
-  data
-  symbol::Symbol
-  offset::AffineMap
-end
-
 """
-    mdl = loadmodel(model, [color=, offset=])
+    $(SIGNATURES)
 
 Brings model data into context, but generating or loading meshes, Geometries, etc as required by requested model,
 and must still be drawn with the Visualizer object using mdl(vis).
@@ -56,48 +35,6 @@ function loadmodel(model::Symbol=:rov;
   end
 end
 
-#syntax support lost in 0.5, but see conversation at
-# function (dmdl::DrawObject)(vc::VisualizationContainer)
-# issue  https://github.com/JuliaLang/julia/issues/14919
-
-function (dmdl::DrawROV)(vc::DrakeVisualizer.Visualizer,
-        am::AbstractAffineMap  )
-  #
-  settransform!(vc[:models][dmdl.symbol], am ∘ dmdl.offset)
-  nothing
-end
-function (dmdl::DrawROV)(vc::DrakeVisualizer.Visualizer,
-        t::Translation,
-        R::Rotation  )
-  #
-  dmdl(vc, Translation ∘ LinearMap(R))
-end
-function (dmdl::DrawROV)(vc::DrakeVisualizer.Visualizer)
-  setgeometry!(vc[:models][dmdl.symbol], dmdl.data)
-  dmdl(vc, Translation(0.,0,0) ∘ LinearMap(Rotations.Quat(1.0,0,0,0)) )
-  nothing
-end
-
-
-function (dmdl::DrawScene)(vc::DrakeVisualizer.Visualizer,
-        am::AbstractAffineMap  )
-  #
-  settransform!(vc[:env][dmdl.symbol], am ∘ dmdl.offset)
-  nothing
-end
-function (dmdl::DrawScene)(vc::DrakeVisualizer.Visualizer,
-        t::Translation,
-        R::Rotation  )
-  #
-  dmdl(vc, Translation ∘ LinearMap(R))
-end
-function (dmdl::DrawScene)(vc::DrakeVisualizer.Visualizer)
-  setgeometry!(vc[:env][dmdl.symbol], dmdl.data)
-  dmdl(vc, Translation(0.,0,0) ∘ LinearMap(Rotations.Quat(1.0,0,0,0)) )
-  nothing
-end
-
-
 
 # t∈[0,1], about
 function parameterizeArcAffineMap(t, as::ArcPointsRangeSolve; initrot::Rotation=Rotations.Quat(1.0,0,0,0))
@@ -111,22 +48,6 @@ function parameterizeArcAffineMap(t, as::ArcPointsRangeSolve; initrot::Rotation=
 end
 
 
-function animatearc(vc::DrakeVisualizer.Visualizer,
-            drmodel::DrawObject,
-            as::ArcPointsRangeSolve;
-            N::Int=100,
-            delaytime::Float64=0.05,
-            initrot::Rotation=Rotations.Quat(1.0,0,0,0),
-            from::Number=0,
-            to::Number=1  )
-  #
-  for t in linspace(from,to,N)
-    am = parameterizeArcAffineMap(t, as, initrot=initrot )
-    drmodel(vc, am )
-    sleep(delaytime)
-  end
-  nothing
-end
 
 # as = ArcPointsRangeSolve(
 #       [0.0;0;0.0],

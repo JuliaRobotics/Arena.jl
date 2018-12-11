@@ -39,3 +39,22 @@ mutable struct ArcPointsRangeSolve <: Function
   ArcPointsRangeSolve(x1::Vector{Float64}, x2::Vector{Float64}, r::Float64) = new(x1,x2,zeros(0),r, zeros(2), 0.0, zeros(3))
   ArcPointsRangeSolve(x1::Vector{Float64}, x2::Vector{Float64}, x3::Vector{Float64}, r::Float64) = new(x1,x2,x3,r, zeros(3), 0.0, zeros(3))
 end
+
+
+
+abstract type DrawObject <: Function end
+
+# Modified ROV model from GrabCAD
+# http://grabcad.com/library/rov-7
+mutable struct DrawROV <: DrawObject
+  data
+  visid::Int
+  symbol::Symbol
+  offset::AffineMap
+end
+
+mutable struct DrawScene <: DrawObject
+  data
+  symbol::Symbol
+  offset::AffineMap
+end

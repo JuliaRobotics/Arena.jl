@@ -1,9 +1,10 @@
 module Arena
 
+using ImageMagick
+
 using
   MeshCat,
   Graphs,
-  CloudGraphs,
   IncrementalInference,
   Caesar,
   RoMEPlotting,
@@ -15,12 +16,12 @@ using
   GeometryTypes,
   ColorTypes,
   MeshIO,
-  ImageMagick,
   ImageCore,
   ImageView,
   Images,
   ProgressMeter,
   DocStringExtensions
+  # CloudGraphs,
   # DrakeVisualizer,
 
 if false
@@ -85,7 +86,7 @@ include("GeneralUtils.jl")
 include("ImageUtils.jl")
 include("VisualizationUtils.jl")
 include("ModelVisualizationUtils.jl")
-include("DBVisualizationUtils.jl")
+# include("DBVisualizationUtils.jl")
 # include("DirectorVisService.jl")
 
 include("HighLevelAPI.jl")
