@@ -1,15 +1,14 @@
-julia 0.6
-DrakeVisualizer 0.1.2
+julia 0.7
+MeshCat
 Gadfly
-# SynchronySDK
+# GraffSDK
 Caesar
 CloudGraphs
-IncrementalInference 0.3.4
-MeshCat
-Graphs 0.9.0
-NLsolve 1.0.0
-RoMEPlotting
-TransformUtils 0.1.0
+IncrementalInference 0.4.6
+Graphs 0.10.2
+NLsolve 3.0.0
+RoMEPlotting 0.0.1+
+TransformUtils 0.2.2
 CoordinateTransformations
 Rotations
 KernelDensityEstimatePlotting
@@ -21,3 +20,5 @@ ImageMagick
 ImageView
 Images
 ProgressMeter
+DocStringExtensions
+# DrakeVisualizer 0.1.2
