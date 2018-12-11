@@ -10,6 +10,7 @@ using
   KernelDensityEstimatePlotting,
   NLsolve,
   TransformUtils,
+  Rotations,
   CoordinateTransformations,
   GeometryTypes,
   ColorTypes,
@@ -78,9 +79,6 @@ export
 
 const NothingUnion{T} = Union{Nothing, T}
 
-function visualize!(fg::FactorGraph, kawgs...)
-  error("visualize!(fg::FactorGraph, ...) not implemented yet")
-end
 
 include("VisualizationTypes.jl")
 include("GeneralUtils.jl")
@@ -90,6 +88,7 @@ include("ModelVisualizationUtils.jl")
 include("DBVisualizationUtils.jl")
 # include("DirectorVisService.jl")
 
+include("HighLevelAPI.jl")
 
 
 end

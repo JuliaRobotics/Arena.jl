@@ -9,8 +9,8 @@ Graphs 0.10.2
 NLsolve 3.0.0
 RoMEPlotting 0.0.1+
 TransformUtils 0.2.2
-CoordinateTransformations
 Rotations
+CoordinateTransformations
 KernelDensityEstimatePlotting
 Colors
 ColorTypes
