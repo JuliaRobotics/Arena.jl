@@ -26,3 +26,16 @@ mutable struct SubmapColorCheat
       RGB(0.992, 0.749, 0.043)]
   ) = new(colors)
 end
+
+
+mutable struct ArcPointsRangeSolve <: Function
+  x1::Vector{Float64}
+  x2::Vector{Float64}
+  x3::Vector{Float64}
+  r::Float64
+  center::Vector{Float64}
+  angle::Float64
+  axis::Vector{Float64}
+  ArcPointsRangeSolve(x1::Vector{Float64}, x2::Vector{Float64}, r::Float64) = new(x1,x2,zeros(0),r, zeros(2), 0.0, zeros(3))
+  ArcPointsRangeSolve(x1::Vector{Float64}, x2::Vector{Float64}, x3::Vector{Float64}, r::Float64) = new(x1,x2,x3,r, zeros(3), 0.0, zeros(3))
+end

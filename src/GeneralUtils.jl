@@ -15,7 +15,6 @@ function getPointCloudFromBSON(data)
 end
 
 
-
 function robotsetup(cg::CloudGraph, session::AbstractString)
   resp = fetchrobotdatafirstpose(cg, session)
 

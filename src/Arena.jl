@@ -68,7 +68,13 @@ export
   ArcPointsRangeSolve,
   findaxiscenter!,
   parameterizeArcAffineMap,
-  animatearc
+  animatearc,
+
+  # ImageUtils
+  imshowhackpng,
+  cloudimshow,
+  imshowhack,
+  roi
 
 const NothingUnion{T} = Union{Nothing, T}
 

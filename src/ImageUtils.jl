@@ -1,10 +1,6 @@
 # image utils
 
-export
-  imshowhackpng,
-  cloudimshow,
-  imshowhack,
-  roi
+
 
 function imshowhackpng(im)
   filename = joinpath("/tmp","tempimgcaesar.png")
@@ -13,7 +9,7 @@ function imshowhackpng(im)
   close(imf)
   run(`eog $(filename)`)
 end
-function imshowhack{T <: Colorant}(img::Array{T})
+function imshowhack(img::Array{T}) where {T <: Colorant}
   filename = joinpath("/tmp","caesarimshowhack.png")
   ImageMagick.save_(filename, img)
   run(`eog $(filename)`)
