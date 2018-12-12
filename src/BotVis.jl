@@ -3,12 +3,15 @@ const lmpoint = HyperSphere(Point(0.,0,0), 0.05)
 const greenMat = MeshPhongMaterial(color=RGBA(0, 1, 0, 0.5))
 const redMat = MeshPhongMaterial(color=RGBA(0, 1, 0, 0.5))
 
-
+"""
+Type for 2d visualization
+"""
 struct BotVis2
     vis::Visualizer
     poses::Dict{Symbol, NTuple{3,Float64}}
     landmarks::Dict{Symbol, NTuple{3,Float64}}
 end
+
 
 # something like this later for botvis 3
 # poses3::Dict{Symbol,Tuple{Point{3,Float32},Quat{Float64}}}
@@ -68,7 +71,6 @@ function drawLandmarks2!(botvis::BotVis2, fgl::FactorGraph; meanmax::Symbol=:max
             push!(botvis.landmarks, x => (xmx[1],xmx[2],0.))
             trans = Translation(xmx[1:2]..., 0.0)
             settransform!(botvis.vis[:landmarks][x], trans)
-            println(x, " ", xmx)
         else
             botvis.landmarks[x] => (xmx[1],xmx[2],0.0)
             trans = Translation(xmx[1:2]..., 0.0)
@@ -76,6 +78,43 @@ function drawLandmarks2!(botvis::BotVis2, fgl::FactorGraph; meanmax::Symbol=:max
         end
     end
 end
+
+#TODO stil untested
+"""
+    $(SIGNATURES)
+Create a point cloud from a depth image.
+""" #TODO its a start, still need transform etc.
+function cloudFromDepthImage(depths::Array{UInt16,2}, #=colmap::Vector{RGB{N0f8}} = repeatedColorMap=#; d::Int = 2,
+                            cu::Float32 = 322.042f0, cv::Float32 = 238.544f0, f::Float32 = 387.205f0, maxrange::Float32 = 10f0)
+
+    (row,col) = size(depths)
+    cloud = Point3f0[]
+    cloudCol = RGB{Float32}[]
+
+    for u = 1:d:row, v = 1:d:col
+        z = depths[u,v]*0.001f0
+        if  0 < z < maxrange
+            x = (u-cu)/f * z
+            y = (v-cv)/f * z
+            push!(cloud, Point3f0(z,x,y))
+            push!(cloudCol, RGB{Float32}(0.,1.,0.))#colmap[round(Int,(z/maxrange)*2559f0)+1]
+        end
+    end
+    pointcloud = PointCloud(cloud, cloudCol)
+
+    return pointcloud
+end
+
+"""
+    $(SIGNATURES)
+Draw point cloud on pose.
+"""
+function drawPointCloudonPose!(botvis::BotVis2, x::Symbol, pointcloud::PointCloud)
+
+    setobject!(botvis.vis[x][:pc], pointcloud)
+
+end
+
 
 ##
 """
