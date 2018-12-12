@@ -1,10 +1,6 @@
 # image utils
 
-export
-  imshowhackpng,
-  cloudimshow,
-  imshowhack,
-  roi
+
 
 function imshowhackpng(im)
   filename = joinpath("/tmp","tempimgcaesar.png")
@@ -13,32 +9,13 @@ function imshowhackpng(im)
   close(imf)
   run(`eog $(filename)`)
 end
-function imshowhack{T <: Colorant}(img::Array{T})
+function imshowhack(img::Array{T}) where {T <: Colorant}
   filename = joinpath("/tmp","caesarimshowhack.png")
   ImageMagick.save_(filename, img)
   run(`eog $(filename)`)
 end
 
 
-
-function cloudimshow(cg::CloudGraph,
-        session::AbstractString,
-        vsym::Symbol;
-        descr::AbstractString = "keyframe_rgb"  )
-  #
-  cv = getCloudVert(cg, session, sym=vsym, bigdata=true)
-  imdata = Caesar.getBigDataElement(cv, descr).data
-  imshowhackpng(imdata)
-end
-
-function cloudimshow(cg::CloudGraph;
-        neoid::Int=-1,
-        descr::AbstractString = "keyframe_rgb"  )
-  #
-  cv = CloudGraphs.get_vertex(cg, neoid, true)
-  imdata = Caesar.getBigDataElement(cv, descr).data
-  imshowhackpng(imdata)
-end
 
 
 function roi(img, row, col; fov=50)

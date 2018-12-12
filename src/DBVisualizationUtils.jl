@@ -78,6 +78,25 @@ end
 
 
 
+function cloudimshow(cg::CloudGraph,
+        session::AbstractString,
+        vsym::Symbol;
+        descr::AbstractString = "keyframe_rgb"  )
+  #
+  cv = getCloudVert(cg, session, sym=vsym, bigdata=true)
+  imdata = Caesar.getBigDataElement(cv, descr).data
+  imshowhackpng(imdata)
+end
+
+function cloudimshow(cg::CloudGraph;
+        neoid::Int=-1,
+        descr::AbstractString = "keyframe_rgb"  )
+  #
+  cv = CloudGraphs.get_vertex(cg, neoid, true)
+  imdata = Caesar.getBigDataElement(cv, descr).data
+  imshowhackpng(imdata)
+end
+
 
 
 function findAllBinaryFactors(cgl::CloudGraph, session::AbstractString)
@@ -104,41 +123,84 @@ function findAllBinaryFactors(cgl::CloudGraph, session::AbstractString)
 end
 
 
-function drawLineBetween!(vis::DrakeVisualizer.Visualizer,
-        cgl::CloudGraph,
-        session::AbstractString,
-        fr::Symbol,
-        to::Symbol;
-        scale=0.01,
-        name::Symbol=:edges,
-        subname::Union{Void,Symbol}=nothing,
-        color=RGBA(0,1.0,0,0.5)  )
-  #
 
-  cv1 = getCloudVert(cgl, session, sym=fr)
-  v1 = cloudVertex2ExVertex(cv1)
-  cv2 = getCloudVert(cgl, session, sym=to)
-  v2 = cloudVertex2ExVertex(cv2)
 
-  drawLineBetween!(vis,session,v1,v2,scale=scale,name=name,subname=subname,color=color   )
+function cachepointclouds!(cache::Dict, cv::CloudVertex, ke::AbstractString, param::Dict)
+  if !haskey(cache, ke)
+    data = getBigDataElement(cv,ke)
+    if typeof(data) == Nothing
+      # warn("unable to load $(ke) from Mongo, gives data type Nothing")
+      return nothing
+    end
+    data = data.data
+    if ke == "depthframe_image"
+      cache[ke] = getPointCloudFromKinect(data, param["dcamjl"], param["imshape"])
+      # ri,ci = param["imshape"][1], param["imshape"][2] # TODO -- hack should be removed since depth is array and should have rows and columns stored in Mongo
+      # # arrdata = data.data
+      # arr = bin2arr(data, dtype=Float32) # should also store dtype for arr in Mongo
+      # img = reshape(arr, ci, ri)'
+      # X = reconstruct(param["dcamjl"], Array{Float64,2}(img))
+      # cache[ke] = X
+    elseif ke == "BSONpointcloud"
+      # deserialize BSON-encoded pointcloud
+      cache[ke] = getPointCloudFromBSON(data)
+      # buf = IOBuffer(data)
+      # st = takebuf_string(buf)
+      # bb = BSONObject(st)
+      # ptarr = map(x -> convert(Array, x), bb["pointcloud"])
+      # cache[ke] = ptarr
+    end
+  end
   nothing
 end
 
 
-
-function drawAllBinaryFactorEdges!(vis::DrakeVisualizer.Visualizer,
-      cgl::CloudGraph,
-      session::AbstractString;
-      scale=0.01  )
-  #
-
-  sloth = findAllBinaryFactors(cgl, session)
-
-  @showprogress 1 "Drawing all binary edges..." for (teeth, toe) in sloth
-    color = pointToColor(toe[3])
-    drawLineBetween!(vis, cgl, session, toe[1], toe[2], subname=toe[3], scale=scale, color=color)
+function retrievePointcloudColorInfo!(cv::CloudVertex, va::AbstractString)
+  rgb = Array{Colorant,2}()
+  if !hasBigDataElement(cv, va)
+    warn("could not find color map in mongo, $(va)")
+    return rgb
   end
-  nothing
+  data = getBigDataElement(cv, va).data
+  if va == "keyframe_rgb" || va == "keyframe_segnet"
+    rgb = ImageMagick.readblob(data);
+  elseif va == "BSONcolors"
+    buffer = IOBuffer(data)
+    str = takebuf_string(buffer)
+    bb = BSONObject(str)
+    # TODO -- maybe better to do: map(f, x), where f(x),
+    # see http://docs.julialang.org/en/stable/manual/style-guide/#do-no-write-x-f-x
+    carr = map(x -> convert(Array{UInt8}, x), bb["colors"])
+    # typeof(rgb) = Array{Array{Colorant,1},1}
+    rgb = carr
+  end
+
+  return rgb
+end
+
+
+function robotsetup(cg::CloudGraph, session::AbstractString)
+  resp = fetchrobotdatafirstpose(cg, session)
+
+  if haskey(resp, "CAMK")
+    # CAMK = [[ 570.34222412; 0.0; 319.5]';
+    #  [   0.0; 570.34222412; 239.5]';
+    #  [   0.0; 0.0; 1.0]'];
+    dcamjl = DepthCamera(resp["CAMK"])
+    buildmesh!(dcamjl)
+    resp["dcamjl"] = dcamjl
+  end
+
+  if haskey(resp, "bTc")
+    bTc = Translation(0.0,0,0) ∘ LinearMap( CoordinateTransformations.Quat(1.0,0,0,0) )
+    if resp["bTc_format"] == "xyzqwqxqyqz"
+      bTc = Translation(resp["bTc"][1:3]...) ∘ LinearMap( CoordinateTransformations.Quat(resp["bTc"][4:7]...) )
+    else
+      warn("Unknown bTc_format, assuming identity for bTc")
+    end
+    resp["bTc"] = bTc
+  end
+  resp
 end
 
 

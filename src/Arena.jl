@@ -1,31 +1,20 @@
 module Arena
 
-using
-  DrakeVisualizer,
-  Graphs,
-  CloudGraphs,
-  IncrementalInference,
-  Caesar,
-  RoMEPlotting,
-  KernelDensityEstimatePlotting,
-  NLsolve,
-  TransformUtils,
-  CoordinateTransformations,
-  GeometryTypes,
-  ColorTypes,
-  MeshIO,
-  ImageMagick,
-  ImageView,
-  Images,
-  ProgressMeter
+
+# due to issue with ImageMagick and Pkg importing, the order is very sensitive here!
+# see https://github.com/JuliaIO/ImageMagick.jl/issues/142
+using ImageMagick
+using Caesar, ImageView, Images, MeshIO, MeshCat
+
+using Rotations, CoordinateTransformations, TransformUtils
+using Graphs, NLsolve
+using GeometryTypes, ColorTypes
+using DocStringExtensions, ProgressMeter
+
+#using RoMEPlotting # results in error similar to ordering error
+
 
 export
-  drawdbdirector,
-  drawPoses,
-  drawPosesLandm,
-  #drawsubmap
-  plot,
-  plotKDE,
   meshgrid,
   DepthCamera,
   buildmesh!,
@@ -33,7 +22,7 @@ export
   VisualizationContainer,
   startdefaultvisualization,
   newtriad!,
-  visualize!,
+  visualize,
   visualizetriads,
   visualizeallposes!,
   visualizeDensityMesh!,
@@ -59,19 +48,57 @@ export
   ArcPointsRangeSolve,
   findaxiscenter!,
   parameterizeArcAffineMap,
-  animatearc
+  animatearc,
 
-const VoidUnion{T} = Union{Void, T}
+  # ImageUtils
+  imshowhackpng,
+  cloudimshow,
+  imshowhack,
+  roi
 
-function visualize!(fg::FactorGraph, kawgs...)
-  error("visualize!(fg::FactorGraph, ...) not implemented yet")
-end
+const NothingUnion{T} = Union{Nothing, T}
 
+
+include("VisualizationTypes.jl")
+include("GeneralUtils.jl")
 include("ImageUtils.jl")
 include("VisualizationUtils.jl")
 include("ModelVisualizationUtils.jl")
-include("DBVisualizationUtils.jl")
-include("DirectorVisService.jl")
+include("HighLevelAPI.jl")
+
+# include("DBVisualizationUtils.jl")
+
+try
+    getfield(Main, :RoMEPlotting)
+
+    # already exported by RoMEPlotting
+    # export
+    #   plot,
+    #   plotKDE,
+    #   drawPoses,
+    #   drawPosesLandm,
+    #   drawsubmap
+
+    @info "Including RoMEPlotting functionality..."
+catch e
+
+end
+
+
+try
+    getfield(Main, :DrakeVisualizer)
+
+    export
+      drawdbdirector
+
+    include("DirectorVisService.jl")
+
+    @show "Including DrakeVisualizer functionality..."
+catch e
+
+end
+
+
 
 
 
