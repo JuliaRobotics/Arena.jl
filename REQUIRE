@@ -4,11 +4,9 @@ MeshCat 0.4.0
 Gadfly
 Caesar 0.2.3
 # GraffSDK
-CloudGraphs
 IncrementalInference 0.4.6
 Graphs 0.10.2
 NLsolve 3.0.0
-RoMEPlotting 0.0.1+
 TransformUtils 0.2.2
 Rotations
 CoordinateTransformations
@@ -17,9 +15,10 @@ Colors
 ColorTypes
 GeometryTypes
 MeshIO
-ImageCore 0.7.0
 ImageView
 Images
 ProgressMeter 0.6.0
 DocStringExtensions
+# RoMEPlotting 0.0.1+
+# CloudGraphs
 # DrakeVisualizer 0.1.2

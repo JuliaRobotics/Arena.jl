@@ -6,27 +6,15 @@ module Arena
 using ImageMagick
 using Caesar, ImageView, Images, MeshIO, MeshCat
 
-#using RoMEPlotting # results in error
-
 using Rotations, CoordinateTransformations, TransformUtils
-
 using Graphs, NLsolve
-
-using GeometryTypes
-
-using ColorTypes
-
+using GeometryTypes, ColorTypes
 using DocStringExtensions, ProgressMeter
 
-# CloudGraphs,
-# DrakeVisualizer,
+#using RoMEPlotting # results in error similar to ordering error
 
 
 export
-  drawPoses,
-  drawPosesLandm,
-  #drawsubmap
-
   meshgrid,
   DepthCamera,
   buildmesh!,
@@ -83,9 +71,13 @@ include("HighLevelAPI.jl")
 try
     getfield(Main, :RoMEPlotting)
 
-    export
-      plot,
-      plotKDE
+    # already exported by RoMEPlotting
+    # export
+    #   plot,
+    #   plotKDE,
+    #   drawPoses,
+    #   drawPosesLandm,
+    #   drawsubmap
 
     @info "Including RoMEPlotting functionality..."
 catch e
