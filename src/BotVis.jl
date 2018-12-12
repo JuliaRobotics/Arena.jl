@@ -79,11 +79,11 @@ function drawLandmarks2!(botvis::BotVis2, fgl::FactorGraph; meanmax::Symbol=:max
     end
 end
 
-#TODO stil untested
+#TODO its a start, still need transform etc.
 """
     $(SIGNATURES)
 Create a point cloud from a depth image.
-""" #TODO its a start, still need transform etc.
+""" #TODO fix color map
 function cloudFromDepthImage(depths::Array{UInt16,2}, #=colmap::Vector{RGB{N0f8}} = repeatedColorMap=#; d::Int = 2,
                             cu::Float32 = 322.042f0, cv::Float32 = 238.544f0, f::Float32 = 387.205f0, maxrange::Float32 = 10f0)
 
@@ -111,7 +111,7 @@ Draw point cloud on pose.
 """
 function drawPointCloudonPose!(botvis::BotVis2, x::Symbol, pointcloud::PointCloud)
 
-    setobject!(botvis.vis[x][:pc], pointcloud)
+    setobject!(botvis.vis[:poses][x][:pc], pointcloud)
 
 end
 
