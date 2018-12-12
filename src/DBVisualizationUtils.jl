@@ -78,6 +78,25 @@ end
 
 
 
+function cloudimshow(cg::CloudGraph,
+        session::AbstractString,
+        vsym::Symbol;
+        descr::AbstractString = "keyframe_rgb"  )
+  #
+  cv = getCloudVert(cg, session, sym=vsym, bigdata=true)
+  imdata = Caesar.getBigDataElement(cv, descr).data
+  imshowhackpng(imdata)
+end
+
+function cloudimshow(cg::CloudGraph;
+        neoid::Int=-1,
+        descr::AbstractString = "keyframe_rgb"  )
+  #
+  cv = CloudGraphs.get_vertex(cg, neoid, true)
+  imdata = Caesar.getBigDataElement(cv, descr).data
+  imshowhackpng(imdata)
+end
+
 
 
 function findAllBinaryFactors(cgl::CloudGraph, session::AbstractString)
@@ -102,7 +121,6 @@ function findAllBinaryFactors(cgl::CloudGraph, session::AbstractString)
 
   return slowly
 end
-
 
 
 
