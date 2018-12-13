@@ -67,6 +67,7 @@ include("ImageUtils.jl")
 include("VisualizationUtils.jl")
 include("ModelVisualizationUtils.jl")
 include("HighLevelAPI.jl")
+include("BotVis.jl")
 
 # include("DBVisualizationUtils.jl")
 
