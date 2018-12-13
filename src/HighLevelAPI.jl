@@ -1,6 +1,7 @@
 # high level user API
 
 global loopvis = true
+global drawtransform = Translation(0.0,0.0,0.0) ∘ LinearMap(Quat(1.0,0.0,0.0,0.0))
 
 """
     $(SIGNATURES)
@@ -18,6 +19,8 @@ Example:
 """
 function visualize(fgl::FactorGraph; show::Bool=false, meanmax=:max)
   global loopvis
+  global drawtransform
+
   loopvis = true
 
   vis = Visualizer()
@@ -37,7 +40,7 @@ function visualize(fgl::FactorGraph; show::Bool=false, meanmax=:max)
       end
       cacheposes[x][:] .= xmx
       trans = Translation(xmx[1:2]..., 0.0) ∘ LinearMap(RotZ(xmx[3]))
-      settransform!(vis[:poses][x], trans)
+      settransform!(vis[:poses][x], drawtransform ∘ trans)
     end
   sleep(1)
   end
@@ -51,4 +54,22 @@ function stopVis!()
   global loopvis
   loopvis = false
   nothing
+end
+
+"""
+    $(SIGNATURES)
+
+Set the global transform for modifying the final draw step, for example Z up or Z down convention.
+
+Example:
+```julia
+using Arena
+# default is Z up
+
+# make Z down
+setGlobalDrawTransform!(quat=Quat(0.0,1.0,0.0,0.0))
+```
+"""
+function setGlobalDrawTransform!(;trans=Translation(0.0,0.0,0.0), quat::Rotations.Quat=Quat(1.0,0.0,0.0,0.0))
+  global drawtransform = trans ∘ LinearMap(quat)
 end

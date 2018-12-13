@@ -24,6 +24,7 @@ export
   newtriad!,
   visualize,
   stopVis!,
+  setGlobalDrawTransform!,
   visualizetriads,
   visualizeallposes!,
   visualizeDensityMesh!,
