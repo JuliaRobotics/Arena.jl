@@ -117,8 +117,8 @@ end
 
 
 ##
-"""
-botvis = initBotVis2(showLocal=true)
-drawPoses!(botvis, fg)
-drawLandmarks2!(botvis, fg)
-""""
+# """
+# botvis = initBotVis2(showLocal=true)
+# drawPoses!(botvis, fg)
+# drawLandmarks2!(botvis, fg)
+# """"
