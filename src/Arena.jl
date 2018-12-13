@@ -23,6 +23,8 @@ export
   startdefaultvisualization,
   newtriad!,
   visualize,
+  stopVis!,
+  setGlobalDrawTransform!,
   visualizetriads,
   visualizeallposes!,
   visualizeDensityMesh!,
