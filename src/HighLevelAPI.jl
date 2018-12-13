@@ -1,5 +1,7 @@
 # high level user API
 
+global loopvis = true
+
 """
     $(SIGNATURES)
 
@@ -15,28 +17,38 @@ Example:
 ```
 """
 function visualize(fgl::FactorGraph; show::Bool=false, meanmax=:max)
+  global loopvis
+  loopvis = true
 
   vis = Visualizer()
-
   show ? open(vis) : nothing
 
   xx, ll = ls(fgl)
-
   cacheposes = Dict{Symbol, Vector{Float64}}()
 
-  for i in 1:1000
+  while loopvis
     for x in xx
       X = getKDE(fgl, x)
       xmx = meanmax == :max ? getKDEMax(X) : getKDEMean(X)
       if !haskey(cacheposes, x)
         triad = Triad(1.0)
         setobject!(vis[:poses][x], triad)
+        cacheposes[x] = deepcopy(xmx)
       end
+      cacheposes[x][:] .= xmx
       trans = Translation(xmx[1:2]..., 0.0) ∘ LinearMap(RotZ(xmx[3]))
       settransform!(vis[:poses][x], trans)
     end
   sleep(1)
   end
 
-  @warn "visualize!(fg::FactorGraph, ...) not fully implemented yet"
+  close(vis)
+  @info "visualize!(fg::FactorGraph, show=true) is finalizing."
+end
+
+
+function stopVis!()
+  global loopvis
+  loopvis = false
+  nothing
 end
