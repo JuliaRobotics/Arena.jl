@@ -10,9 +10,9 @@ Collection of 3D visualizations associated with the [Caesar.jl](http://www.githu
 
 # Documentation
 
-Please find documentation as part of the [Caesar.jl documentation](http://juliarobotics.github.io/Caesar.jl/latest/concepts/arena_visualizations.html) at:
+Please find documentation as part of the [Caesar.jl documentation](http://www.juliarobotics.org/Caesar.jl/latest/concepts/arena_visualizations/) at:
 
-[![docs](https://img.shields.io/badge/docs-latest-blue.svg)](http://juliarobotics.github.io/Caesar.jl/latest/concepts/arena_visualizations.html)
+[![docs](https://img.shields.io/badge/docs-latest-blue.svg)](http://www.juliarobotics.org/Caesar.jl/latest/concepts/arena_visualizations/)
 
 # Introduction
 
