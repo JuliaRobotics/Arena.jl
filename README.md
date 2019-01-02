@@ -1,35 +1,32 @@
 # Arena.jl
 
-Collection of all 2D and 3D visualizations associated with the [Caesar.jl](http://www.github.com/JuliaRobotics/Caesar.jl.git) and [RoME.jl](http://www.github.com/JuliaRobotics/RoME.jl.git) robotic navigation packages.
+Collection of 3D visualizations associated with the [Caesar.jl](http://www.github.com/JuliaRobotics/Caesar.jl.git) and [RoME.jl](http://www.github.com/JuliaRobotics/RoME.jl.git) robotic navigation packages.
 
 [![Build Status](https://travis-ci.org/JuliaRobotics/Arena.jl.svg?branch=master)](https://travis-ci.org/JuliaRobotics/Arena.jl)
 [![codecov.io](https://codecov.io/github/JuliaRobotics/Arena.jl/coverage.svg?branch=master)](https://codecov.io/github/JuliaRobotics/Arena.jl?branch=master)
 
-[![Arena](http://pkg.julialang.org/badges/Arena_0.6.svg)](http://pkg.julialang.org/?pkg=Arena&ver=0.6)
 [![Arena](http://pkg.julialang.org/badges/Arena_0.7.svg)](http://pkg.julialang.org/?pkg=Arena&ver=0.7)
+[![Arena](http://pkg.julialang.org/badges/Arena_1.0.svg)](http://pkg.julialang.org/?pkg=Arena&ver=1.0)
 
 # Documentation
 
-Please find documentation as part of the [Caesar.jl documentation](http://juliarobotics.github.io/Caesar.jl/latest/arena_visualizations.html) at:
+Please find documentation as part of the [Caesar.jl documentation](http://juliarobotics.github.io/Caesar.jl/latest/concepts/arena_visualizations.html) at:
 
-[![docs](https://img.shields.io/badge/docs-latest-blue.svg)](http://juliarobotics.github.io/Caesar.jl/latest/arena_visualizations.html)
+[![docs](https://img.shields.io/badge/docs-latest-blue.svg)](http://juliarobotics.github.io/Caesar.jl/latest/concepts/arena_visualizations.html)
 
 # Introduction
 
-All visualization utils and applications associated with the Caesar and RoME projects are collected here.  This package offers a wide variety of 2D plotting as well as 3D visualization utilities for understanding the state estimation, localization, and mapping aspects associated with mobile platform navigation.  This package is developed from vantage point of simultaneous localization and mapping (SLAM).
+All visualization utils and applications associated with the Caesar and RoME projects are collected here.  This package offers a variety 3D visualization utilities for understanding the state estimation, localization, and mapping aspects associated with mobile platform navigation.  This package was developed for simultaneous localization and mapping (SLAM) using the Caesar.jl framework.  Please see [RoMEPlotting.jl](http://www.github.com/JuliaRobotics/RoMEPlotting.jl) for 2D visualization utils.  
 
-Comments and issues are welcome, and note that this package should see several changes and evolutions during 2018.
+This package is built in the [Julia](http://www.julialang.org) or ([JuliaPro](http://www.juliacomputing.com)) programming language.  Comments and issues are welcome, and note that this package should see several changes and evolutions during 2019.
 
 # Installation
 
-**Note** work in progress to transition to [MeshCat.jl](http://www.github.com/JuliaRobotics/MeshCat.jl) -- contact @dehann for more details.
-This package will be registed with Julia METADATA in the future which will make it available with the standard package management tools.  Within [Julia](http://www.julialang.org) or ([JuliaPro](http://www.juliacomputing.com)) type:
+We are transitioning to [MeshCat.jl](http://www.github.com/JuliaRobotics/MeshCat.jl), .
+This is registed with Julia METADATA but please use current master branch.
 ```julia
-julia> Pkg.add("Arena")
-```
-Until then, please use direct package cloning:
-```julia
-Pkg.clone("http://www.github.com/JuliaRobotics/Arena.jl.git")
+julia> ] # activate pkg manager
+(v1.0) pkg> add Arena#master
 ```
 
 # Credits
