@@ -86,6 +86,8 @@ if isdefined(Main, :RoMEPlotting)
     #   drawsubmap
 
     @info "Including RoMEPlotting functionality..."
+else
+  @info "RoMEPlotting not included, please call 'using RoMEPlotting' before 'using Arena'"
 end
 
 
@@ -97,15 +99,18 @@ if isdefined(Main, :DrakeVisualizer)
     include("DirectorVisService.jl")
 
     @info "Including DrakeVisualizer functionality..."
+  else
+    @info "DrakeVisualizer not included, please call 'using DrakeVisualizer' before 'using Arena'"
 end
 
 
 if isdefined(Main, :GraffSDK)
-    @info "Including GraffVisualization functionality..."
-    include("GraffVisualizationService.jl")
-    export
-      visualizeSession
-
+  @info "Including GraffVisualization functionality..."
+  include("GraffVisualizationService.jl")
+  export
+    visualizeSession
+else
+  @info "GraffSDK not included, please call 'using GraffSDK' before 'using Arena'"
 end
 
 
