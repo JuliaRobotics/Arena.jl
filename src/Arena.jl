@@ -56,7 +56,11 @@ export
   imshowhackpng,
   cloudimshow,
   imshowhack,
-  roi
+  roi,
+
+  # BotVis
+  initBotVis2,
+  drawPoses2!
 
 const NothingUnion{T} = Union{Nothing, T}
 
@@ -71,8 +75,7 @@ include("BotVis.jl")
 
 # include("DBVisualizationUtils.jl")
 
-try
-    getfield(Main, :RoMEPlotting)
+if isdefined(Main, :RoMEPlotting)
 
     # already exported by RoMEPlotting
     # export
@@ -83,25 +86,27 @@ try
     #   drawsubmap
 
     @info "Including RoMEPlotting functionality..."
-catch e
-
 end
 
 
-try
-    getfield(Main, :DrakeVisualizer)
+if isdefined(Main, :DrakeVisualizer)
 
     export
       drawdbdirector
 
     include("DirectorVisService.jl")
 
-    @show "Including DrakeVisualizer functionality..."
-catch e
-
+    @info "Including DrakeVisualizer functionality..."
 end
 
 
+if isdefined(Main, :GraffSDK)
+    @info "Including GraffVisualization functionality..."
+    include("GraffVisualizationService.jl")
+    export
+      visualizeSession
+
+end
 
 
 

@@ -7,7 +7,11 @@ import ColorTypes: RGBA, RGB
 # Internal transform functions
 function projectPose2(renderObject, node::NodeDetailsResponse)::Nothing
     mapEst = node.properties["MAP_est"]
-    trans = Translation(mapEst[1],mapEst[2],0) ∘ LinearMap(RotZ(mapEst[3]))
+    rotZ = 0
+    if "POSE" in node.labels
+        rotZ = mapEst[3] # Pose2, otherwise it's a Point2
+    end
+    trans = Translation(mapEst[1],mapEst[2],0) ∘ LinearMap(RotZ(rotZ))
     settransform!(renderObject, trans)
     return nothing
 end
@@ -39,8 +43,8 @@ function visualizeSession(robotId::String, sessionId::String, bigDataImageKey::S
     end
 
     # Create a new visualizer instance
-    vis = Visualizer()
-    open(vis)
+    # vis = Visualizer()
+    # open(vis)
 
     # Get the session info
     println("Get the session info for session '$sessionId'...")
@@ -85,24 +89,24 @@ function visualizeSession(robotId::String, sessionId::String, bigDataImageKey::S
             mapEst = node.properties["MAP_est"]
 
             # # Stochastic point clouds
-            # if haskey(node.packed, "val")
-            #     println(" - Rendering stochastic measurements")
-            #     # TODO: Make a lookup as well.
-            #     points = map(p -> Point3f0(p[1], p[2], 0), node.packed["val"])
-            #     # Make more fancy in future.
-            #     # cols = reinterpret(RGB{Float32}, points); # use the xyz value as rgb color
-            #     cols = map(p -> RGB{Float32}(1.0, 1.0, 1.0), points)
-            #     # pointsMaterial = PointsMaterial(RGB(1., 1., 1.), 0.001, 2)
-            #     pointCloud = PointCloud(points, cols)
-            #     setobject!(vis[label]["statsPointCloud"], pointCloud)
-            # end
+            if haskey(node.packed, "val")
+                println(" - Rendering stochastic measurements")
+                # TODO: Make a lookup as well.
+                points = map(p -> Point3f0(p[1], p[2], 0), node.packed["val"])
+                # Make more fancy in future.
+                # cols = reinterpret(RGB{Float32}, points); # use the xyz value as rgb color
+                cols = map(p -> RGB{Float32}(1.0, 1.0, 1.0), points)
+                # pointsMaterial = PointsMaterial(RGB(1., 1., 1.), 0.001, 2)
+                pointCloud = PointCloud(points, cols)
+                setobject!(vis[label]["statsPointCloud"], pointCloud)
+            end
 
             if pointCloudKey != "" # Get and render point clouds
                 println(" - Rendering point cloud data for keys that have id = $bigDataImageKey...")
                 bigEntries = getDataEntries(robotId, sessionId, nSummary.id)
                 for bigEntry in bigEntries
                     if bigEntry.id == pointCloudKey
-                        dataFrame = getDataElement(robotId, sessionId, nSummary.id, bigEntry.id)
+                        dataFrame = getData(robotId, sessionId, nSummary.id, bigEntry.id)
 
                         # Form the data.
                         pointData = eval(parse(dataFrame.data))
@@ -129,7 +133,7 @@ function visualizeSession(robotId::String, sessionId::String, bigDataImageKey::S
                     if bigEntry.id == bigDataImageKey
                         # HyperRectangle until we have sprites
                         box = HyperRectangle(Vec(0,0,0), Vec(0.01, 9.0/16.0/2.0, 16.0/9.0/2.0))
-                        dataFrame = getDataElement(robotId, sessionId, nSummary.id, bigEntry.id)
+                        dataFrame = getData(robotId, sessionId, nSummary.id, bigEntry.id)
                         image = PngImage(base64decode(dataFrame.data))
 
                         # Make an image and put it in the right place.
