@@ -38,7 +38,7 @@ end
 	$(SIGNATURES)
 Constructor helper for creating a camera model.
 """
-function CameraModel(width::Int,height::Int,fc::Vector{Float64},cc::Vector{Float64},skew::Float64,kc::Vector{Float64})
+function CameraModel(width::Int,height::Int,fc::Vector{Float64},cc::Vector{Float64},skew::Float64,kc::Vector{Float64})::CameraModel
     KK = [fc[1]      skew  cc[1];
              0       fc[2] cc[2];
              0		    0     1]
@@ -50,12 +50,12 @@ end
 	$(SIGNATURES)
 Constructor helper for creating a camera model.
 """
-function CameraModel(width::Int,height::Int,f::Float64,cc::Vector{Float64})
+function CameraModel(width::Int,height::Int,f::Float64,cc::Vector{Float64})::CameraModel
     KK = [f 0 cc[1];
           0 f cc[2];
           0	0     1.]
     Ki = inv(KK)
-    CameraModel(width,height,[f,f], f, cc, 0.0, [0.], KK,Ki)
+    return CameraModel(width,height,[f,f], f, cc, 0.0, [0.], KK,Ki)
 end
 
 
@@ -63,19 +63,17 @@ end
     $(SIGNATURES)
 Initialize empty visualizer
 """
-function initBotVis2(;showLocal::Bool = true)
-
+function initBotVis2(;showLocal::Bool = true)::BotVis2
     vis = Visualizer()
     showLocal && open(vis)
     return BotVis2(vis, Dict{Symbol, NTuple{3,Float64}}(), Dict{Symbol, NTuple{3,Float64}}())
-
 end
 
 """
     $(SIGNATURES)
 Draw all poses in an 2d factor graph, use meanmax = :max or :mean for distribution max or mean, respectively.
 """
-function drawPoses2!(botvis::BotVis2, fgl::FactorGraph; meanmax::Symbol=:max, triadLength=0.25)
+function drawPoses2!(botvis::BotVis2, fgl::FactorGraph; meanmax::Symbol=:max, triadLength=0.25)::Nothing
 
     xx, ll = ls(fgl)
 
@@ -94,13 +92,14 @@ function drawPoses2!(botvis::BotVis2, fgl::FactorGraph; meanmax::Symbol=:max, tr
             settransform!(botvis.vis[:poses][x], trans)
         end
     end
+	return nothing
 end
 
 """
     $(SIGNATURES)
 Draw all landmarks in an 2d factor graph, use meanmax = :max or :mean for distribution max or mean, respectively.
 """
-function drawLandmarks2!(botvis::BotVis2, fgl::FactorGraph; meanmax::Symbol=:max)
+function drawLandmarks2!(botvis::BotVis2, fgl::FactorGraph; meanmax::Symbol=:max)::Nothing
 
     xx, ll = ls(fgl)
 
@@ -118,6 +117,7 @@ function drawLandmarks2!(botvis::BotVis2, fgl::FactorGraph; meanmax::Symbol=:max
             settransform!(botvis.vis[:landmarks][x], trans)
         end
     end
+	return nothing
 end
 
 #TODO its a start, still need transform etc.
@@ -126,7 +126,7 @@ end
 Create a {Float32} point cloud from a depth image. Note: rotated to Forward Starboard Down
 """ #TODO fix color map
 function cloudFromDepthImage(depths::Array{UInt16,2}, cm::CameraModel#=colmap::Vector{RGB{N0f8}} = repeatedColorMap=#;
-							 depthscale = 0.001f0, skip::Int = 2, maxrange::Float32 = 5f0)
+							 depthscale = 0.001f0, skip::Int = 2, maxrange::Float32 = 5f0)::PointCloud
 
 	cx = Float32(cm.cc[1])
 	cy = Float32(cm.cc[2])
@@ -156,10 +156,9 @@ end
 Draw point cloud on pose.
 xTc -> pose to camera transform
 """ #TODO: confirm xTc or cTx
-function drawPointCloudonPose!(botvis::BotVis2, x::Symbol, pointcloud::PointCloud, xTc::SE3 = SE3([0,0,0],I))
-
+function drawPointCloudonPose!(botvis::BotVis2, x::Symbol, pointcloud::PointCloud, xTc::SE3 = SE3([0,0,0],I))::Nothing
     setobject!(botvis.vis[:poses][x][:pc], pointcloud)
 	trans = Translation(xTc.t[1], xTc.t[2], xTc.t[3])∘LinearMap(Quat(xTc.R.R))
 	settransform!(botvis.vis[:poses][x][:pc], trans)
-
+	return nothing
 end
