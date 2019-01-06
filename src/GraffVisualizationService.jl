@@ -36,7 +36,7 @@ $(SIGNATURES)
 Visualize a session using MeshCat.
 Return: Nothing.
 """
-function visualizeSession(robotId::String, sessionId::String, bigDataImageKey::String = "", pointCloudKey::String = "")::Nothing
+function visualizeSession(vis::Visualizer, robotId::String, sessionId::String, bigDataImageKey::String = "", pointCloudKey::String = "")::Nothing
     config = getGraffConfig()
     if config == nothing
         error("Graff config is not set, please call setGraffConfig with a valid configuration.")
@@ -156,7 +156,7 @@ $(SIGNATURES)
 Visualize a session using MeshCat.
 Return: Nothing.
 """
-function visualizeSession(bigDataImageKey::String = "", pointCloudKey::String = "")::Nothing
+function visualizeSession(vis::Visualizer; bigDataImageKey::String = "", pointCloudKey::String = "")::Nothing
     config = getGraffConfig()
     if config == nothing
         error("Graff config is not set, please call setGraffConfig with a valid configuration.")
@@ -166,5 +166,5 @@ function visualizeSession(bigDataImageKey::String = "", pointCloudKey::String = 
         error("Your config doesn't have a robot or a session specified, please attach your config to a valid robot or session by setting the robotId and sessionId fields. Robot = $(config.robotId), Session = $(config.sessionId)")
     end
 
-    visualizeSession(config.robotId, config.sessionId, bigDataImageKey, pointCloudKey)
+    visualizeSession(vis, config.robotId, config.sessionId, bigDataImageKey, pointCloudKey)
 end

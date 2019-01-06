@@ -10,7 +10,8 @@ using Rotations, CoordinateTransformations, TransformUtils
 using Graphs, NLsolve
 using GeometryTypes, ColorTypes
 using DocStringExtensions, ProgressMeter
-
+using CaesarLCMTypes
+using Requires
 #using RoMEPlotting # results in error similar to ordering error
 
 
@@ -73,46 +74,28 @@ include("ModelVisualizationUtils.jl")
 include("HighLevelAPI.jl")
 include("BotVis.jl")
 
-# include("DBVisualizationUtils.jl")
+# Used by Requires.jl to check if packages are imported. Much cleaner than janky isdefined().
+function __init__()
+  @info "Conditionally importing RoMEPlotting, GraffSDK, and Director..."
+  # Checking what to import from the calling module
+  @require GraffSDK="d47733cc-d211-5467-9efc-951b5b83f246" begin
+    @info "--- GraffSDK is defined in the calling namespace, importing Graff functions..."
+    include("GraffVisualizationService.jl")
+  end
+  @require RoMEPlotting="238d586b-a4bf-555c-9891-eda6fc5e55a2" begin
+    @info "--- RoMEPlotting is defined in the calling namespace, importing RoMEPlotting functions..."
 
-if isdefined(Main, :RoMEPlotting)
-
-    # already exported by RoMEPlotting
-    # export
-    #   plot,
-    #   plotKDE,
-    #   drawPoses,
-    #   drawPosesLandm,
-    #   drawsubmap
-
-    @info "Including RoMEPlotting functionality..."
-else
-  @info "RoMEPlotting not included, please call 'using RoMEPlotting' before 'using Arena'"
-end
-
-
-if isdefined(Main, :DrakeVisualizer)
-
-    export
-      drawdbdirector
-
+  end
+  @require DrakeVisualizer="49c7015b-b8db-5bc5-841b-fcb31c578176" begin
+    @info "--- DrakeVisualizer is defined in the calling namespace, importing DrakeVisualizer functions..."
     include("DirectorVisService.jl")
-
-    @info "Including DrakeVisualizer functionality..."
-  else
-    @info "DrakeVisualizer not included, please call 'using DrakeVisualizer' before 'using Arena'"
+  end
 end
 
-
-if isdefined(Main, :GraffSDK)
-  @info "Including GraffVisualization functionality..."
-  include("GraffVisualizationService.jl")
-  export
-    visualizeSession
-else
-  @info "GraffSDK not included, please call 'using GraffSDK' before 'using Arena'"
-end
-
-
-
+# Graff exports
+export
+  visualizeSession
+# DrakeVisualizer exports
+export
+  drawdbdirector
 end

@@ -1,4 +1,5 @@
 # image utils
+using FileIO
 
 """
 Convert image_t (some types of it) to RGB{N0f8} matrix for viewing.
@@ -10,13 +11,13 @@ function image_tToRgb(img::image_t)::Array{RGB{N0f8}, 2}
     error("This function only can convert image_t's with pixel format RGB (859981650)")
   end
 
-  return rgbUint8ToRgb(img.width, img.height, img.data)
+  return rgbUint8ToRgb(Int(img.width), Int(img.height), img.data)
 end
 
 """
 Convert a Vector{UInt8} to an image of RGB Vector{N0f8}.
 """
-function rgbUint8ToRgb(width::Int64, height::Int64, data::Vector{Uint8})::Array{RGB{N0f8}, 2}
+function rgbUint8ToRgb(width::Int64, height::Int64, data::Vector{UInt8})::Array{RGB{N0f8}, 2}
   r=data[1:3:end];g=data[2:3:end];b=data[3:3:end]
   imgForm = rand(RGB{N0f8}, height, width)
   for w in 1:width
