@@ -1,5 +1,4 @@
 # image utils
-using FileIO
 
 """
 Convert image_t (some types of it) to RGB{N0f8} matrix for viewing.
@@ -35,6 +34,16 @@ Converts an RGB image to a JPEG image, returns buffer of UInt8 data.
 function rgbToJpeg(rgb::Array{RGB{N0f8}, 2})::Vector{UInt8}
   io = IOBuffer()
   save(Stream(format"JPEG",io), imgForm)
+  bytes = take!(io)
+  return bytes
+end
+
+"""
+Converts an RGB image to a PNG image, returns buffer of UInt8 data.
+"""
+function rgbToPng(rgb::Array{RGB{N0f8}, 2})::Vector{UInt8}
+  io = IOBuffer()
+  save(Stream(format"PNG",io), imgForm)
   bytes = take!(io)
   return bytes
 end

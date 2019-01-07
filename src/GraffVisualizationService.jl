@@ -1,4 +1,5 @@
 using GraffSDK
+using Base64
 using MeshCat
 using CoordinateTransformations
 import GeometryTypes: HyperRectangle, Vec, Point, HomogenousMesh, SignedDistanceField, Point3f0
@@ -101,25 +102,21 @@ function visualizeSession(vis::Visualizer, robotId::String, sessionId::String, b
                 setobject!(vis[label]["statsPointCloud"], pointCloud)
             end
 
+            bigEntries = getDataEntries(robotId, sessionId, nSummary.id)
+
             if pointCloudKey != "" # Get and render point clouds
                 println(" - Rendering point cloud data for keys that have id = $bigDataImageKey...")
-                bigEntries = getDataEntries(robotId, sessionId, nSummary.id)
                 for bigEntry in bigEntries
                     if bigEntry.id == pointCloudKey
-                        dataFrame = getData(robotId, sessionId, nSummary.id, bigEntry.id)
+                        dataFrame = GraffSDK.getData(robotId, sessionId, nSummary.id, bigEntry.id)
 
-                        # Form the data.
-                        pointData = eval(parse(dataFrame.data))
-                        points = Vector{Point3f0}(length(pointData[1]))
-                        for i in 1:length(pointData[1])
-                            points[i] = Point3f0(pointData[1][i], pointData[2][i], pointData[3][i])
-                        end
+                        cameraModel = CameraModel(640,480, 1.0, [0.0, 0.0]) #TODO: Fix
+                        dData = base64decode(dataFrame.data)
+                        # Form it up.
+                        c = reinterpret(UInt16, dData)
+                        depths = collect(reshape(c, (640, 480)))
+                        pointCloud = cloudFromDepthImage(depths, cameraModel)
 
-                        # Make more fancy in future.
-                        # cols = reinterpret(RGB{Float32}, points); # use the xyz value as rgb color
-                        cols = map(p -> RGB{Float32}(1.0, 1.0, 1.0), points)
-                        # pointsMaterial = PointsMaterial(RGB(1., 1., 1.), 0.001, 2)
-                        pointCloud = PointCloud(points, cols)
                         setobject!(vis[label][pointCloudKey], pointCloud)
                     end
                 end
@@ -128,12 +125,11 @@ function visualizeSession(vis::Visualizer, robotId::String, sessionId::String, b
             # Camera imagery
             if bigDataImageKey != "" # Get and render big data images and pointclouds
                 println(" - Rendering image data for keys that have id = $bigDataImageKey...")
-                bigEntries = getDataEntries(robotId, sessionId, nSummary.id)
                 for bigEntry in bigEntries
                     if bigEntry.id == bigDataImageKey
                         # HyperRectangle until we have sprites
                         box = HyperRectangle(Vec(0,0,0), Vec(0.01, 9.0/16.0/2.0, 16.0/9.0/2.0))
-                        dataFrame = getData(robotId, sessionId, nSummary.id, bigEntry.id)
+                        dataFrame = GraffSDK.getData(robotId, sessionId, nSummary.id, bigEntry.id)
                         image = PngImage(base64decode(dataFrame.data))
 
                         # Make an image and put it in the right place.
@@ -156,7 +152,7 @@ $(SIGNATURES)
 Visualize a session using MeshCat.
 Return: Nothing.
 """
-function visualizeSession(vis::Visualizer; bigDataImageKey::String = "", pointCloudKey::String = "")::Nothing
+function visualizeSession(vis::Visualizer; dataImageKey::String = "", pointCloudKey::String = "")::Nothing
     config = getGraffConfig()
     if config == nothing
         error("Graff config is not set, please call setGraffConfig with a valid configuration.")
@@ -166,5 +162,5 @@ function visualizeSession(vis::Visualizer; bigDataImageKey::String = "", pointCl
         error("Your config doesn't have a robot or a session specified, please attach your config to a valid robot or session by setting the robotId and sessionId fields. Robot = $(config.robotId), Session = $(config.sessionId)")
     end
 
-    visualizeSession(vis, config.robotId, config.sessionId, bigDataImageKey, pointCloudKey)
+    visualizeSession(vis, config.robotId, config.sessionId, dataImageKey, pointCloudKey)
 end

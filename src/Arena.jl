@@ -1,6 +1,5 @@
 module Arena
 
-
 # due to issue with ImageMagick and Pkg importing, the order is very sensitive here!
 # see https://github.com/JuliaIO/ImageMagick.jl/issues/142
 using ImageMagick
@@ -12,6 +11,7 @@ using GeometryTypes, ColorTypes
 using DocStringExtensions, ProgressMeter
 using CaesarLCMTypes
 using Requires
+using FileIO
 #using RoMEPlotting # results in error similar to ordering error
 
 
@@ -54,14 +54,21 @@ export
   animatearc,
 
   # ImageUtils
+  image_tToRgb,
+  rgbUint8ToRgb,
+  rgbToJpeg,
+  rgbToPng,
   imshowhackpng,
   cloudimshow,
   imshowhack,
   roi,
 
   # BotVis
+  CameraModel,
   initBotVis2,
-  drawPoses2!
+  drawPoses2!,
+  cloudFromDepthImage
+
 
 const NothingUnion{T} = Union{Nothing, T}
 
@@ -84,7 +91,6 @@ function __init__()
   end
   @require RoMEPlotting="238d586b-a4bf-555c-9891-eda6fc5e55a2" begin
     @info "--- RoMEPlotting is defined in the calling namespace, importing RoMEPlotting functions..."
-
   end
   @require DrakeVisualizer="49c7015b-b8db-5bc5-841b-fcb31c578176" begin
     @info "--- DrakeVisualizer is defined in the calling namespace, importing DrakeVisualizer functions..."
