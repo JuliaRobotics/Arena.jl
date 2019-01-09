@@ -2,8 +2,9 @@ using GraffSDK
 using Base64
 using MeshCat
 using CoordinateTransformations
-import GeometryTypes: HyperRectangle, Vec, Point, HomogenousMesh, SignedDistanceField, Point3f0
+import GeometryTypes: HyperRectangle, HyperSphere, Vec, Point, HomogenousMesh, SignedDistanceField, Point3f0
 import ColorTypes: RGBA, RGB
+using Colors: Color, Colorant, RGB, RGBA, alpha, hex
 
 # Internal transform functions
 function projectPose2(renderObject, node::NodeDetailsResponse)::Nothing
@@ -73,11 +74,30 @@ function visualizeSession(vis::Visualizer, robotId::String, sessionId::String, b
             mapEst = node.properties["MAP_est"]
 
             # Parent triad
-            triad = Triad(1.0)
+            triad = Triad(0.5)
             setobject!(vis[label], triad)
             pose2TransFunc(vis[label], node)
         else
-            warn("  - Node hasn't been solved, can't really render this one...")
+            @warn "  - Node hasn't been solved, can't really render this one..."
+        end
+    end
+    # TODO: Show landmarks with code above, this is just placeholder.
+    nodesResponse = getLandmarks(robotId, sessionId)
+    println(" -- Rendering $(length(nodesResponse)) landmarks for session $sessionId for robot $robotId...")
+    @showprogress for nSummary in nodesResponse
+        node = getNode(robotId, sessionId, nSummary.id)
+        label = node.label
+
+        println(" - Rendering $(label)...")
+        if haskey(node.properties, "MAP_est")
+            mapEst = node.properties["MAP_est"]
+
+            # Parent sphere
+            sphere = HyperSphere(Point(0.,0,0), 0.1)
+            setobject!(vis[label], sphere, MeshLambertMaterial(color=colorant"blue"))
+            pose2TransFunc(vis[label], node)
+        else
+            @warn "  - Node hasn't been solved, can't really render this one..."
         end
     end
     # Rendering the point clouds and images
@@ -90,19 +110,22 @@ function visualizeSession(vis::Visualizer, robotId::String, sessionId::String, b
             mapEst = node.properties["MAP_est"]
 
             # # Stochastic point clouds
-            if haskey(node.packed, "val")
-                println(" - Rendering stochastic measurements")
-                # TODO: Make a lookup as well.
-                points = map(p -> Point3f0(p[1], p[2], 0), node.packed["val"])
-                # Make more fancy in future.
-                # cols = reinterpret(RGB{Float32}, points); # use the xyz value as rgb color
-                cols = map(p -> RGB{Float32}(1.0, 1.0, 1.0), points)
-                # pointsMaterial = PointsMaterial(RGB(1., 1., 1.), 0.001, 2)
-                pointCloud = PointCloud(points, cols)
-                setobject!(vis[label]["statsPointCloud"], pointCloud)
-            end
+            # if haskey(node.packed, "val")
+            #     println(" - Rendering stochastic measurements")
+            #     # TODO: Make a lookup as well.
+            #     points = map(p -> Point3f0(p[1], p[2], 0), node.packed["val"])
+            #     # Make more fancy in future.
+            #     # cols = reinterpret(RGB{Float32}, points); # use the xyz value as rgb color
+            #     cols = map(p -> RGB{Float32}(1.0, 1.0, 1.0), points)
+            #     # pointsMaterial = PointsMaterial(RGB(1., 1., 1.), 0.001, 2)
+            #     pointCloud = PointCloud(points, cols)
+            #     setobject!(vis[label]["statsPointCloud"], pointCloud)
+            # end
 
             bigEntries = getDataEntries(robotId, sessionId, nSummary.id)
+            # Making a material to set the size
+        	material = PointsMaterial(color=RGBA(0,0,1,0.5),size=0.05)
+            dcam = Arena.CameraModel(640, 480, 387.205, [322.042, 238.544])
 
             if pointCloudKey != "" # Get and render point clouds
                 println(" - Rendering point cloud data for keys that have id = $bigDataImageKey...")
@@ -110,14 +133,13 @@ function visualizeSession(vis::Visualizer, robotId::String, sessionId::String, b
                     if bigEntry.id == pointCloudKey
                         dataFrame = GraffSDK.getData(robotId, sessionId, nSummary.id, bigEntry.id)
 
-                        cameraModel = CameraModel(640,480, 1.0, [0.0, 0.0]) #TODO: Fix
                         dData = base64decode(dataFrame.data)
                         # Form it up.
                         c = reinterpret(UInt16, dData)
                         depths = collect(reshape(c, (640, 480)))
-                        pointCloud = cloudFromDepthImage(depths, cameraModel)
+                        pointCloud = cloudFromDepthImage(depths, dcam)
 
-                        setobject!(vis[label][pointCloudKey], pointCloud)
+                        setobject!(vis[label][pointCloudKey], pointCloud, material)
                     end
                 end
             end
@@ -142,7 +164,7 @@ function visualizeSession(vis::Visualizer, robotId::String, sessionId::String, b
                 end
             end
         else
-            warn("  - Node hasn't been solved, can't really render this one...")
+            @warn "  - Node hasn't been solved, can't really render this one..."
         end
     end
 end
