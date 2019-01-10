@@ -125,8 +125,8 @@ end
     $(SIGNATURES)
 Create a {Float32} point cloud from a depth image. Note: rotated to Forward Starboard Down
 """ #TODO fix color map
-function cloudFromDepthImage(depths::Array{UInt16,2}, cm::CameraModel#=colmap::Vector{RGB{N0f8}} = repeatedColorMap=#;
-							 depthscale = 0.001f0, skip::Int = 2, maxrange::Float32 = 5f0)::PointCloud
+function cloudFromDepthImage(depths::Array{UInt16,2}, cm::CameraModel;
+							 depthscale = 0.001f0, skip::Int = 2, maxrange::Float32 = 5f0, trans::AffineMap=Translation(0,0,0))::PointCloud
 
 	cx = Float32(cm.cc[1])
 	cy = Float32(cm.cc[2])
@@ -141,7 +141,8 @@ function cloudFromDepthImage(depths::Array{UInt16,2}, cm::CameraModel#=colmap::V
         if  0 < z < maxrange
             x = (v-cx)/fx * z
 			y = (u-cy)/fy * z
-            push!(cloud, Point3f0(z,x,y)) #NOTE rotated to Forward Starboard Down, TODO: maybe leave in camera frame?
+			p = trans(Point3f0(z,x,y))
+            push!(cloud, p) #NOTE rotated to Forward Starboard Down, TODO: maybe leave in camera frame?
             push!(cloudCol, RGB{Float32}(0.,1.,0.))#colmap[round(Int,(z/maxrange)*2559f0)+1]
         end
     end

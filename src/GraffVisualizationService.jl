@@ -5,6 +5,7 @@ using CoordinateTransformations
 import GeometryTypes: HyperRectangle, HyperSphere, Vec, Point, HomogenousMesh, SignedDistanceField, Point3f0
 import ColorTypes: RGBA, RGB
 using Colors: Color, Colorant, RGB, RGBA, alpha, hex
+using JSON
 
 # Internal transform functions
 function projectPose2(renderObject, node::NodeDetailsResponse)::Nothing
@@ -38,7 +39,7 @@ $(SIGNATURES)
 Visualize a session using MeshCat.
 Return: Nothing.
 """
-function visualizeSession(vis::Visualizer, robotId::String, sessionId::String, bigDataImageKey::String = "", pointCloudKey::String = "")::Nothing
+function visualizeSession(vis::Visualizer, robotId::String, sessionId::String, bigDataImageKey::String = "", pointCloudKey::String = "", dCamModel::Arena.CameraModel = Arena.CameraModel(640, 480, 387.205, [322.042, 238.544]))::Nothing
     config = getGraffConfig()
     if config == nothing
         error("Graff config is not set, please call setGraffConfig with a valid configuration.")
@@ -77,25 +78,12 @@ function visualizeSession(vis::Visualizer, robotId::String, sessionId::String, b
             triad = Triad(0.5)
             setobject!(vis[label], triad)
             pose2TransFunc(vis[label], node)
-        else
-            @warn "  - Node hasn't been solved, can't really render this one..."
-        end
-    end
-    # TODO: Show landmarks with code above, this is just placeholder.
-    nodesResponse = getLandmarks(robotId, sessionId)
-    println(" -- Rendering $(length(nodesResponse)) landmarks for session $sessionId for robot $robotId...")
-    @showprogress for nSummary in nodesResponse
-        node = getNode(robotId, sessionId, nSummary.id)
-        label = node.label
 
-        println(" - Rendering $(label)...")
-        if haskey(node.properties, "MAP_est")
-            mapEst = node.properties["MAP_est"]
-
-            # Parent sphere
-            sphere = HyperSphere(Point(0.,0,0), 0.1)
-            setobject!(vis[label], sphere, MeshLambertMaterial(color=colorant"blue"))
-            pose2TransFunc(vis[label], node)
+            # Landmark
+            if "LANDMARK" in node.labels
+                sphere = HyperSphere(Point(0.,0,0), 0.1)
+                setobject!(vis[label]["landmark"], sphere, MeshLambertMaterial(color=colorant"blue"))
+            end
         else
             @warn "  - Node hasn't been solved, can't really render this one..."
         end
@@ -122,22 +110,27 @@ function visualizeSession(vis::Visualizer, robotId::String, sessionId::String, b
             #     setobject!(vis[label]["statsPointCloud"], pointCloud)
             # end
 
-            bigEntries = getDataEntries(robotId, sessionId, nSummary.id)
+            bigEntries = getDataEntries(node)
             # Making a material to set the size
-        	material = PointsMaterial(color=RGBA(0,0,1,0.5),size=0.05)
-            dcam = Arena.CameraModel(640, 480, 387.205, [322.042, 238.544])
+        	material = PointsMaterial(color=RGBA(0,1.0,1.0,0.5),size=0.02)
 
             if pointCloudKey != "" # Get and render point clouds
                 println(" - Rendering point cloud data for keys that have id = $bigDataImageKey...")
                 for bigEntry in bigEntries
                     if bigEntry.id == pointCloudKey
-                        dataFrame = GraffSDK.getData(robotId, sessionId, nSummary.id, bigEntry.id)
-
+                        dataFrame = GraffSDK.getData(node, bigEntry.id)
                         dData = base64decode(dataFrame.data)
+
+                        # Testing: Get the sensor pose
+                        sensor = JSON.parse(getRawData(node, "Sensor"))
+                        kQi = map(a -> Float64(a), sensor["kQi"]) #Vector{Float64}
+                        kTc = (SE3([0,0,0], Quaternion(kQi)))
+                        trans = Translation([0,0,0])∘LinearMap(Quat(kTc.R.R))
+
                         # Form it up.
                         c = reinterpret(UInt16, dData)
                         depths = collect(reshape(c, (640, 480)))
-                        pointCloud = cloudFromDepthImage(depths, dcam)
+                        pointCloud = cloudFromDepthImage(depths, dCamModel; trans=trans)
 
                         setobject!(vis[label][pointCloudKey], pointCloud, material)
                     end
@@ -174,7 +167,7 @@ $(SIGNATURES)
 Visualize a session using MeshCat.
 Return: Nothing.
 """
-function visualizeSession(vis::Visualizer; dataImageKey::String = "", pointCloudKey::String = "")::Nothing
+function visualizeSession(vis::Visualizer; dataImageKey::String = "", pointCloudKey::String = "", dCamModel::Arena.CameraModel = Arena.CameraModel(640, 480, 387.205, [322.042, 238.544]))::Nothing
     config = getGraffConfig()
     if config == nothing
         error("Graff config is not set, please call setGraffConfig with a valid configuration.")
@@ -184,5 +177,5 @@ function visualizeSession(vis::Visualizer; dataImageKey::String = "", pointCloud
         error("Your config doesn't have a robot or a session specified, please attach your config to a valid robot or session by setting the robotId and sessionId fields. Robot = $(config.robotId), Session = $(config.sessionId)")
     end
 
-    visualizeSession(vis, config.robotId, config.sessionId, dataImageKey, pointCloudKey)
+    visualizeSession(vis, config.robotId, config.sessionId, dataImageKey, pointCloudKey, dCamModel)
 end
