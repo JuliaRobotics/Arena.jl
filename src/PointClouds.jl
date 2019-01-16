@@ -86,8 +86,14 @@ end
 
 
 
-function cloudFromDepthImageClampZ(depths::Array{UInt16,2}, cm::Arena.CameraModel, trans::AffineMap;#=colmap::Vector{RGB{N0f8}} = repeatedColorMap=#
-							 depthscale = 0.001f0, skip::Int = 2, maxrange::Float32 = 5f0, clampz = [0f0,1f0], colmap::Vector{T} = [0f0]) where T
+function cloudFromDepthImageClampZ(depths::Array{UInt16,2},
+                                   cm::Arena.CameraModel,
+                                   trans::AffineMap;    #=colmap::Vector{RGB{N0f8}} = repeatedColorMap=#
+                                   depthscale = 0.001f0,
+                                   skip::Int = 2,
+                                   maxrange::Float32=5f0,
+                                   clampz = [0f0,1f0],
+                                   colmap::Vector{T} = [0f0]  ) where T
 
 	cx = Float32(cm.cc[1])
 	cy = Float32(cm.cc[2])
