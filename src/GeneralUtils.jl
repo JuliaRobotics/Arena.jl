@@ -1,38 +1,37 @@
 # general utilities
 
-# create a new Director window with home axis
-function startdefaultvisualization(;newwindow::Bool=true,
-                                    draworigin::Bool=true,
-                                    vismodule=MeshCat)
-  # Visualizer.any_open_windows() || Visualizer.new_window(); #Visualizer.new_window()
-  viz = vismodule.Visualizer()
-  if draworigin
-    setgeometry!(viz[:origin], Triad())
-    settransform!(viz[:origin], Translation(0.0, 0.0, 0.0) ∘ LinearMap(Rotations.Quat(1.0,0,0,0)))
-  end
 
-  # realtime, rttfs = Dict{Symbol, Any}(), Dict{Symbol, AbstractAffineMap}()
-  # dc = VisualizationContainer(Dict{Symbol, Visualizer}(), triads, trposes, meshes, realtime, rttfs)
-  # visualizetriads!(dc)
-  return viz
+
+
+# find and set initial transform to project model in the world frame to the
+# desired stating point and orientation
+function findinitaffinemap!(as::ArcPointsRangeSolve; initrot::Rotation=Rotations.Quaternion(1.0,0,0,0))
+  # how to go from origin to center to x1 of arc
+  cent = Translation(as.center)
+  rho = Translation(as.r, 0,0)
+  return
 end
 
 
 
-
-function animatearc(vc,
-                    drmodel::DrawObject,
-                    as::ArcPointsRangeSolve;
-                    N::Int=100,
-                    delaytime::Float64=0.05,
-                    initrot::Rotation=Rotations.Quat(1.0,0,0,0),
-                    from::Number=0,
-                    to::Number=1  )
-  #
-  for t in linspace(from,to,N)
-    am = parameterizeArcAffineMap(t, as, initrot=initrot )
-    drmodel(vc, am )
-    sleep(delaytime)
+function gettopoint(drawtype::Symbol=:max)
+  topoint = +
+  if drawtype == :max
+    topoint = getKDEMax
+  elseif drawtype == :mean
+    topoint = getKDEMean
+  elseif drawtype == :fit
+    topoint = (x) -> getKDEfit(x).μ
+  else
+    error("Unknown draw type")
   end
-  nothing
+  return topoint
+end
+
+function getdotwothree(sym::Symbol, X::Array{Float64,2})
+  dims = size(X,1)
+  dotwo = dims == 2 || (dims == 3 && string(sym)[1] == 'x')
+  dothree = dims == 6 || (string(sym)[1] == 'l' && dims != 2)
+  (dotwo && dothree) || (!dotwo && !dothree) ? error("Unknown dimension for drawing points in viewer, $((dotwo, dothree))") : nothing
+  return dotwo, dothree
 end

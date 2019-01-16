@@ -32,15 +32,7 @@ function stopVis!()
   nothing
 end
 
-"""
-    $(SIGNATURES)
-Initialize empty visualizer
-"""
-function initVisualizer(;show::Bool=true)
-    vis = Visualizer()
-    showLocal && open(vis)
-    return vis
-end
+
 
 
 """

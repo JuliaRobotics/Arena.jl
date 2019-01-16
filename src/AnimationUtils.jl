@@ -11,6 +11,24 @@ function (as::ArcPointsRangeSolve)(res::Vector{Float64}, x::Vector{Float64})
   nothing
 end
 
+function animatearc(vc,
+                    drmodel::DrawObject,
+                    as::ArcPointsRangeSolve;
+                    N::Int=100,
+                    delaytime::Float64=0.05,
+                    initrot::Rotation=Rotations.Quat(1.0,0,0,0),
+                    from::Number=0,
+                    to::Number=1  )
+  #
+  for t in linspace(from,to,N)
+    am = parameterizeArcAffineMap(t, as, initrot=initrot )
+    drmodel(vc, am )
+    sleep(delaytime)
+  end
+  nothing
+end
+
+
 function findaxiscenter!(as::ArcPointsRangeSolve)
   d = length(as.center)
   x0 = 0.5*(as.x1+as.x2)

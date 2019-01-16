@@ -82,7 +82,9 @@ include("RobotSceneModels.jl")
 
 # utils
 include("GeneralUtils.jl")
+include("ColorUtils.jl")
 include("VisualizeLines.jl")
+include("MeshUtils.jl")
 include("BigDataUtils.jl")
 include("ImageUtils.jl")
 include("AnimationUtils.jl")
@@ -90,7 +92,10 @@ include("VisualizationUtils.jl")
 include("VisualizePosesPoints.jl")
 include("PointClouds.jl")
 include("ModelVisualizationUtils.jl")
+
+# service layers
 include("GraphVisualizationService.jl")
+# include("GraffVisualizationService.jl")
 
 # user interaction
 include("HighLevelAPI.jl")

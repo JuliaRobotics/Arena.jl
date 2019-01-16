@@ -4,9 +4,10 @@ Collection of all 2D and 3D visualizations associated with the [Caesar.jl](http:
 
 [![Build Status](https://travis-ci.org/JuliaRobotics/Arena.jl.svg?branch=master)](https://travis-ci.org/JuliaRobotics/Arena.jl)
 [![codecov.io](https://codecov.io/github/JuliaRobotics/Arena.jl/coverage.svg?branch=master)](https://codecov.io/github/JuliaRobotics/Arena.jl?branch=master)
+[![Version](https://img.shields.io/badge/version-v0.1.0-orange.svg)](https://github.com/JuliaRobotics/Arena.jl/releases)
 
-[![Arena](http://pkg.julialang.org/badges/Arena_0.6.svg)](http://pkg.julialang.org/?pkg=Arena&ver=0.6)
-[![Arena](http://pkg.julialang.org/badges/Arena_0.7.svg)](http://pkg.julialang.org/?pkg=Arena&ver=0.7)
+<!-- [![Arena](http://pkg.julialang.org/badges/Arena_0.6.svg)](http://pkg.julialang.org/?pkg=Arena&ver=0.6)
+[![Arena](http://pkg.julialang.org/badges/Arena_0.7.svg)](http://pkg.julialang.org/?pkg=Arena&ver=0.7) -->
 
 # Documentation
 

@@ -31,6 +31,28 @@ end
 
 
 
+function findAllBinaryFactors(fgl::FactorGraph; api::DataLayerAPI=dlapi)
+  xx, ll = ls(fgl)
+
+  slowly = Dict{Symbol, Tuple{Symbol, Symbol, Symbol}}()
+  for x in xx
+    facts = ls(fgl, x, api=localapi) # TODO -- known BUG on ls(api=dlapi)
+    for fc in facts
+      nodes = lsf(fgl, fc)
+      if length(nodes) == 2
+        # add to dictionary for later drawing
+        if !haskey(slowly, fc)
+          fv = getVert(fgl, fgl.fIDs[fc])
+          slowly[fc] = (nodes[1], nodes[2], typeof(getfnctype(fv)).name.name)
+        end
+      end
+    end
+  end
+
+  return slowly
+end
+
+
 
 
 

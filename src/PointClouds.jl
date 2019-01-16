@@ -1,5 +1,17 @@
 # file for all point cloud drawing related functions
 
+function reconstruct(dc::DepthCamera, depth::Array{Float64})
+  s = dc.skip
+  depth_sampled = depth[1:s:end,1:s:end]
+  # assert(depth_sampled.shape == self.xs.shape)
+  r,c = size(dc.xs)
+
+  ret = Array{Float64,3}(r,c,3)
+  ret[:,:,1] = dc.xs .* depth_sampled
+  ret[:,:,2] = dc.ys .* depth_sampled
+  ret[:,:,3] = depth_sampled
+  return ret
+end
 
 
 function prepcolordepthcloud!( cvid::Int,
