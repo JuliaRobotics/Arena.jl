@@ -95,7 +95,6 @@ include("ModelVisualizationUtils.jl")
 
 # service layers
 include("GraphVisualizationService.jl")
-# include("GraffVisualizationService.jl")
 
 # user interaction
 include("HighLevelAPI.jl")
@@ -111,6 +110,7 @@ function __init__()
   @require GraffSDK="d47733cc-d211-5467-9efc-951b5b83f246" begin
     @info "--- GraffSDK is defined in the calling namespace, importing Graff functions..."
     include("GraffVisualizationService.jl")
+    include("DeprecatedGraff.jl")
   end
   @require RoMEPlotting="238d586b-a4bf-555c-9891-eda6fc5e55a2" begin
     @info "--- RoMEPlotting is defined in the calling namespace, importing RoMEPlotting functions..."

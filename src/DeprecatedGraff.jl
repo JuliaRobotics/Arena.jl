@@ -1,4 +1,12 @@
 
+# Callbacks for pose transforms
+# TODO -- MAKE OBSOLETE wishlist, use MultipleDispatch instead of global
+global poseTransforms = Dict{String, Function}(
+    "Pose2" => projectPose2,
+    "Pose3" => projectPose3
+)
+
+
 """
 $(SIGNATURES)
 Visualize a session using MeshCat.

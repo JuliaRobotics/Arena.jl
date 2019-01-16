@@ -28,12 +28,6 @@ function projectPose3(renderObject, node::NodeDetailsResponse)::Nothing
     return nothing
 end
 
-# Callbacks for pose transforms
-# TODO -- MAKE OBSOLETE wishlist, use MultipleDispatch instead of global
-global poseTransforms = Dict{String, Function}(
-    "Pose2" => projectPose2,
-    "Pose3" => projectPose3
-)
 
 
 function cacheVariablePointEst!(rose::Tuple{<:AbstractString, <:AbstractString},
