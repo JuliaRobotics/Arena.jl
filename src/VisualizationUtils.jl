@@ -1,40 +1,4 @@
-# some drawing utils
-
-
-function (as::ArcPointsRangeSolve)(res::Vector{Float64}, x::Vector{Float64})
-  res[1] = norm(x-as.x1)^2 - as.r^2
-  res[2] = norm(x-as.x2)^2 - as.r^2
-  if length(res) == 3
-    res[3] = norm(x-as.x3)^2 - as.r^2
-  end
-  nothing
-end
-
-function findaxiscenter!(as::ArcPointsRangeSolve)
-  d = length(as.center)
-  x0 = 0.5*(as.x1+as.x2)
-  r = nlsolve(as, x0)
-  as.center = r.zero
-  vA, vB, vC = as.x1-as.center, as.x2-as.center, as.x3-as.center
-  l1, l2 = norm(as.x1-as.x2), norm(as.x2-as.x3)
-  halfl0 = 0.5*norm(as.x1-as.x3)
-  axt = l1 < l2 ? Base.cross(vA,vB) : Base.cross(vB,vC)
-  as.axis[1:3] = axt / norm(axt)
-  ta = Base.cross(vA,vC)
-  ta ./= norm(ta)
-  alph = acos(halfl0/as.r)
-  if norm(ta-as.axis) < 1e-4
-    #accute
-    as.angle = pi - 2*alph
-  else
-    # oblique
-    as.angle = pi + 2*alph
-  end
-  r.f_converged
-end
-
-# as = ArcPointsRangeSolve([-1.0;0],[2.0;0],1.5)
-# nlsolve(as, [1.0;1.0])
+# General visualization utils
 
 
 # find and set initial transform to project model in the world frame to the
@@ -45,13 +9,6 @@ function findinitaffinemap!(as::ArcPointsRangeSolve; initrot::Rotation=Rotations
   rho = Translation(as.r, 0,0)
   return
 end
-
-
-
-
-# DrakeVisualizer.new_window()
-# vctest = testtriaddrawing()
-
 
 
 
@@ -82,24 +39,6 @@ function colorwheel(n::Int)
   convert(RGB, HSV((n*30)%360, 1.0,0.5))
 end
 
-
-function drawLine!(vispath, from::Vector{Float64}, to::Vector{Float64}; scale=0.01,color=RGBA(0,1.0,0,0.5))
-  vector = to-from
-  len = norm(vector)
-  buildline = Float64[len, 0, 0]
-
-  v = norm(buildline-vector) > 1e-10 ? Base.cross(buildline, vector)  : [0,0,1.0]
-  axis = v/norm(v)
-  angle = acos(dot(vector, buildline)/(len^2) )
-  rot = LinearMap( CoordinateTransformations.AngleAxis(angle, axis...) )
-
-  mol = HyperRectangle(Vec(0.0,-scale,-scale), Vec(len,scale,scale))
-  molbox = GeometryData(mol, color)
-
-  setgeometry!(vispath, molbox)
-  settransform!(vispath, Translation(from...) ∘ rot )
-  nothing
-end
 
 
 
@@ -190,6 +129,33 @@ function reconstruct(dc::DepthCamera, depth::Array{Float64})
   ret[:,:,2] = dc.ys .* depth_sampled
   ret[:,:,3] = depth_sampled
   return ret
+end
+
+
+
+
+function visualizeVariableCache!(vis::Visualizer,
+                                 cachevars::Dict{Symbol, Tuple{Symbol,Vector{Float64}}};
+                                 sessionId::String="Session"  )::Nothing
+    #
+
+    for (vsym, valpair) in cachevars
+        # TODO -- consider upgrading to MultipleDispatch with actual softtypes
+        if valpair[1] == :Point2
+            visPoint2!(vis, sessionId, vsym, valpair[2])
+        elseif valpair[1] == :Pose2
+            visPose2!(vis, sessionId, vsym, valpair[2])
+        elseif valpair[1] == :Point3
+            visPoint3!(vis, sessionId, vsym, valpair[2])
+        elseif valpair[1] == :Pose3
+            visPose3!(vis, sessionId, vsym, valpair[2])
+        else
+            error("Unknown softtype symbol to visualize from cache.")
+        end
+
+    end
+
+    return nothing
 end
 
 

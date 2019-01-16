@@ -126,6 +126,8 @@ end
 
 
 
+
+
 #TODO its a start, still need transform etc.
 """
     $(SIGNATURES)
@@ -156,7 +158,6 @@ function cloudFromDepthImage(depths::Array{UInt16,2}, cm::CameraModel;
 
     return pointcloud
 end
-
 
 
 """

@@ -5,7 +5,8 @@ module Arena
 using ImageMagick
 using Caesar, ImageView, Images, MeshIO, MeshCat
 
-using Rotations, CoordinateTransformations, TransformUtils
+using Rotations, CoordinateTransformations
+using TransformUtils
 using Graphs, NLsolve
 using GeometryTypes, ColorTypes
 using DocStringExtensions, ProgressMeter
@@ -14,6 +15,8 @@ using Requires
 using FileIO
 #using RoMEPlotting # results in error similar to ordering error
 
+const CTs = CoordinateTransformations
+const TUs = TransformUtils
 
 export
   meshgrid,
@@ -72,18 +75,27 @@ export
 
 const NothingUnion{T} = Union{Nothing, T}
 
-
-include("VisualizationTypes.jl")
+# types and models
 include("CameraModel.jl")
+include("VisualizationTypes.jl")
 include("RobotSceneModels.jl")
+
+# utils
 include("GeneralUtils.jl")
+include("VisualizeLines.jl")
 include("BigDataUtils.jl")
 include("ImageUtils.jl")
+include("AnimationUtils.jl")
 include("VisualizationUtils.jl")
 include("VisualizePosesPoints.jl")
 include("PointClouds.jl")
 include("ModelVisualizationUtils.jl")
+include("GraphVisualizationService.jl")
+
+# user interaction
 include("HighLevelAPI.jl")
+
+# may be deprecated
 include("BotVis.jl")
 
 

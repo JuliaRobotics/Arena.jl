@@ -1,10 +1,11 @@
 # code to help visualize poses and points
 
 
-function drawpose!(viz, sym::Symbol;
-      tf::CoordinateTransformations.AbstractAffineMap=Translation(0.0,0,0)∘LinearMap(CoordinateTransformations.AngleAxis(0.0,0,0,1.0)),
-      session::AbstractString="",
-      collection::Symbol=:poses)
+function drawpose!(viz,
+                   sym::Symbol;
+                   tf::CTs.AbstractAffineMap=Translation(0.0,0,0)∘LinearMap(CTs.AngleAxis(0.0,0,0,1.0)),
+                   session::AbstractString="",
+                   collection::Symbol=:poses)
   #
   if session == ""
     setgeometry!(viz[collection][sym], Triad())
@@ -62,9 +63,9 @@ function drawpose!(vc,
 end
 
 function drawpose!(vc,
-      vert::Graphs.ExVertex;
-      session::AbstractString="NA",
-      drawtype::Symbol=:max )
+                   vert::Graphs.ExVertex;
+                   session::AbstractString="NA",
+                   drawtype::Symbol=:max )
   #
 
   topoint = gettopoint(drawtype)
@@ -93,13 +94,71 @@ end
 
 
 function drawpoint!(vc,
-        vert::Graphs.ExVertex;
-        session::AbstractString="NA",
-        drawtype::Symbol=:max )
+                    vert::Graphs.ExVertex;
+                    session::AbstractString="NA",
+                    drawtype::Symbol=:max )
   #
   topoint = gettopoint(drawtype)
   X = getVal(vert)
   dotwo, dothree = getdotwothree(Symbol(vert.label), X)
   drawpoint!(vc, vert, topoint, dotwo, dothree, session=session)
   nothing
+end
+
+
+
+"""
+    $(SIGNATURES)
+Draw all poses in an 2d factor graph, use meanmax = :max or :mean for distribution max or mean, respectively.
+"""
+function drawPoses2!(botvis::BotVis2,
+                     fgl::FactorGraph;
+                     meanmax::Symbol=:max,
+                     triadLength=0.25  )::Nothing
+    #
+    xx, ll = ls(fgl)
+
+    for x in xx
+        X = getKDE(fgl, x)
+        xmx = meanmax == :max ? getKDEMax(X) : getKDEMean(X)
+        if !haskey(botvis.poses, x)
+            triad = Triad(triadLength)
+            setobject!(botvis.vis[:poses][x], triad)
+            push!(botvis.poses, x => (xmx[1],xmx[2],xmx[3]))
+            trans = Translation(xmx[1:2]..., 0.0) ∘ LinearMap(RotZ(xmx[3]))
+            settransform!(botvis.vis[:poses][x], trans)
+        else
+            botvis.poses[x] => (xmx[1],xmx[2],xmx[3])
+            trans = Translation(xmx[1:2]..., 0.0) ∘ LinearMap(RotZ(xmx[3]))
+            settransform!(botvis.vis[:poses][x], trans)
+        end
+    end
+	return nothing
+end
+
+"""
+    $(SIGNATURES)
+Draw all landmarks in an 2d factor graph, use meanmax = :max or :mean for distribution max or mean, respectively.
+"""
+function drawLandmarks2!(botvis::BotVis2,
+                         fgl::FactorGraph;
+                         meanmax::Symbol=:max  )::Nothing
+    #
+    xx, ll = ls(fgl)
+
+    for x in ll
+        X = getKDE(fgl, x)
+        xmx = meanmax == :max ? getKDEMax(X) : getKDEMean(X)
+        if !haskey(botvis.landmarks, x)
+            setobject!(botvis.vis[:landmarks][x], lmpoint,  greenMat)
+            push!(botvis.landmarks, x => (xmx[1],xmx[2],0.))
+            trans = Translation(xmx[1:2]..., 0.0)
+            settransform!(botvis.vis[:landmarks][x], trans)
+        else
+            botvis.landmarks[x] => (xmx[1],xmx[2],0.0)
+            trans = Translation(xmx[1:2]..., 0.0)
+            settransform!(botvis.vis[:landmarks][x], trans)
+        end
+    end
+	return nothing
 end
