@@ -16,3 +16,23 @@ function startdefaultvisualization(;newwindow::Bool=true,
   # visualizetriads!(dc)
   return viz
 end
+
+
+
+
+function animatearc(vc,
+                    drmodel::DrawObject,
+                    as::ArcPointsRangeSolve;
+                    N::Int=100,
+                    delaytime::Float64=0.05,
+                    initrot::Rotation=Rotations.Quat(1.0,0,0,0),
+                    from::Number=0,
+                    to::Number=1  )
+  #
+  for t in linspace(from,to,N)
+    am = parameterizeArcAffineMap(t, as, initrot=initrot )
+    drmodel(vc, am )
+    sleep(delaytime)
+  end
+  nothing
+end
