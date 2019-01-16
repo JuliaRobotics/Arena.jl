@@ -1,6 +1,7 @@
 # file for all point cloud drawing related functions
 
 
+
 function prepcolordepthcloud!( cvid::Int,
       X::Array;
       rgb::Array=Array{<:Colorant,2}(),

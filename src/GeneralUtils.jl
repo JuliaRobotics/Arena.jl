@@ -1,15 +1,18 @@
 # general utilities
 
-function getPointCloudFromKinect(data, dcamjl, imshape)
-  ri,ci = imshape[1], imshape[2] # TODO -- hack should be removed since depth is array and should have rows and columns stored in Mongo
-  arr = bin2arr(data, dtype=Float32) # should also store dtype for arr in Mongo
-  img = reshape(arr, ci, ri)'
-  reconstruct(dcamjl, Array{Float64,2}(img))
-end
+# create a new Director window with home axis
+function startdefaultvisualization(;newwindow::Bool=true,
+                                    draworigin::Bool=true,
+                                    vismodule=MeshCat)
+  # Visualizer.any_open_windows() || Visualizer.new_window(); #Visualizer.new_window()
+  viz = vismodule.Visualizer()
+  if draworigin
+    setgeometry!(viz[:origin], Triad())
+    settransform!(viz[:origin], Translation(0.0, 0.0, 0.0) ∘ LinearMap(Rotations.Quat(1.0,0,0,0)))
+  end
 
-function getPointCloudFromBSON(data)
-  buf = IOBuffer(data)
-  st = takebuf_string(buf)
-  bb = BSONObject(st)
-  return map(x -> convert(Array, x), bb["pointcloud"])
+  # realtime, rttfs = Dict{Symbol, Any}(), Dict{Symbol, AbstractAffineMap}()
+  # dc = VisualizationContainer(Dict{Symbol, Visualizer}(), triads, trposes, meshes, realtime, rttfs)
+  # visualizetriads!(dc)
+  return viz
 end

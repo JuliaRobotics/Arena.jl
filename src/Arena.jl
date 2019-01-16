@@ -54,7 +54,7 @@ export
   animatearc,
 
   # ImageUtils
-  image_tToRgb,
+  # image_tToRgb,
   rgbUint8ToRgb,
   rgbToJpeg,
   rgbToPng,
@@ -77,12 +77,15 @@ include("VisualizationTypes.jl")
 include("CameraModel.jl")
 include("RobotSceneModels.jl")
 include("GeneralUtils.jl")
+include("BigDataUtils.jl")
 include("ImageUtils.jl")
 include("VisualizationUtils.jl")
+include("VisualizePosesPoints.jl")
 include("PointClouds.jl")
 include("ModelVisualizationUtils.jl")
 include("HighLevelAPI.jl")
 include("BotVis.jl")
+
 
 # Used by Requires.jl to check if packages are imported. Much cleaner than janky isdefined().
 function __init__()
