@@ -9,7 +9,7 @@ using Rotations, CoordinateTransformations, TransformUtils
 using Graphs, NLsolve
 using GeometryTypes, ColorTypes
 using DocStringExtensions, ProgressMeter
-using CaesarLCMTypes
+# using CaesarLCMTypes
 using Requires
 using FileIO
 #using RoMEPlotting # results in error similar to ordering error
@@ -74,9 +74,12 @@ const NothingUnion{T} = Union{Nothing, T}
 
 
 include("VisualizationTypes.jl")
+include("CameraModel.jl")
+include("RobotSceneModels.jl")
 include("GeneralUtils.jl")
 include("ImageUtils.jl")
 include("VisualizationUtils.jl")
+include("PointClouds.jl")
 include("ModelVisualizationUtils.jl")
 include("HighLevelAPI.jl")
 include("BotVis.jl")

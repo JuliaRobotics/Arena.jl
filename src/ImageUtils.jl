@@ -1,17 +1,17 @@
 # image utils
 
-"""
-Convert image_t (some types of it) to RGB{N0f8} matrix for viewing.
-Currently only supports:
-* RGB (pixelformat 859981650)
-"""
-function image_tToRgb(img::image_t)::Array{RGB{N0f8}, 2}
-  if img.pixelformat != 859981650
-    error("This function only can convert image_t's with pixel format RGB (859981650)")
-  end
-
-  return rgbUint8ToRgb(Int(img.width), Int(img.height), img.data)
-end
+# """
+# Convert image_t (some types of it) to RGB{N0f8} matrix for viewing.
+# Currently only supports:
+# * RGB (pixelformat 859981650)
+# """
+# function image_tToRgb(img::image_t)::Array{RGB{N0f8}, 2}
+#   if img.pixelformat != 859981650
+#     error("This function only can convert image_t's with pixel format RGB (859981650)")
+#   end
+#
+#   return rgbUint8ToRgb(Int(img.width), Int(img.height), img.data)
+# end
 
 """
 Convert a Vector{UInt8} to an image of RGB Vector{N0f8}.

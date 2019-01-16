@@ -397,38 +397,6 @@ function drawAllBinaryFactorEdges!(vis::DrakeVisualizer.Visualizer,
   nothing
 end
 
-function drawpointcloud!(vis::DrakeVisualizer.Visualizer,
-        poseswithdepth::Dict,
-        vsym::Symbol,
-        pointcloud,
-        va,
-        param::Dict,
-        sesssym::Symbol;
-        # imshape=(480,640),
-        wTb::CoordinateTransformations.AbstractAffineMap=
-              Translation(0,0,0.0) ∘ LinearMap(
-              CoordinateTransformations.Quat(1.0, 0, 0, 0))   )
-        # bTc::CoordinateTransformations.AbstractAffineMap=
-        #       Translation(0,0,0.6) ∘ LinearMap(
-        #       CoordinateTransformations.Quat(0.5, -0.5, 0.5, -0.5))  )
-  #
-
-  pcsym = Symbol(string("pc_", va != "none" ? va : "ID"))
-  setgeometry!(vis[sesssym][pcsym][vsym][:pose], Triad())
-  settransform!(vis[sesssym][pcsym][vsym][:pose], wTb) # also updated as parallel track
-  setgeometry!(vis[sesssym][pcsym][vsym][:pose][:cam], Triad())
-  settransform!(vis[sesssym][pcsym][vsym][:pose][:cam], param["bTc"] )
-  setgeometry!(vis[sesssym][pcsym][vsym][:pose][:cam][:pc], pointcloud )
-
-  # these poses need to be update if the point cloud is to be moved
-  if !haskey(poseswithdepth,vsym)
-    thetype = typeof(vis[sesssym][pcsym][vsym][:pose])
-    poseswithdepth[vsym] = Vector{ thetype }()
-  end
-  push!(poseswithdepth[vsym], vis[sesssym][pcsym][vsym][:pose])
-
-  nothing
-end
 
 
 function fetchdrawdepthcloudbycvid!(vis::DrakeVisualizer.Visualizer,

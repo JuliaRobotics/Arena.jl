@@ -193,55 +193,7 @@ function reconstruct(dc::DepthCamera, depth::Array{Float64})
 end
 
 
-# function prepcolordepthcloud!{T <: ColorTypes.Colorant}( X::Array;
-#       rgb::Array{T, 2}=Array{Colorant,2}(),
-#       skip::Int=4,
-#       maxrange::Float64=4.5 )
-function prepcolordepthcloud!( cvid::Int,
-      X::Array;
-      rgb::Array=Array{Colorant,2}(),
-      skip::Int=4,
-      maxrange::Float64=4.5 )
-  #
-  pointcloud = nothing
-  pccols = nothing
-  havecolor = size(rgb,1) > 0
-  if typeof(X) == Array{Float64,3}
-    r,c,h = size(X)
-    Xd = X[1:skip:r,1:skip:c,:]
-    rd,cd,hd = size(Xd)
-    mask = Xd[:,:,:] .> maxrange
-    Xd[mask] = Inf
 
-    rgbss = havecolor ? rgb[1:skip:r,1:skip:c] : nothing
-    # rgbss = rgb[1:4:r,1:4:c,:]./255.0
-    pts = Vector{Vector{Float64}}()
-    pccols = Vector()
-    for i in 1:rd, j in 1:cd
-      if !isnan(Xd[i,j,1]) && Xd[i,j,3] != Inf
-        push!(pts, vec(Xd[i,j,:]) )
-        havecolor ? push!(pccols, rgbss[i,j] ) : nothing
-        # push!(pccols, RGB(rgbss[i,j,3], rgbss[i,j,2], rgbss[i,j,1]) )
-      end
-    end
-    pointcloud = PointCloud(pts)
-  elseif typeof(X) == Array{Array{Float64,1},1}
-    pointcloud = PointCloud(X)
-    pccols = rgb # TODO: refactor
-  elseif size(X,1)==0
-    return nothing
-  else
-    error("dont know how to deal with data type=$(typeof(X)),size=$(size(X))")
-  end
-  if havecolor
-    pointcloud.channels[:rgb] = pccols
-  else
-    #submap colors
-    smc = submapcolor(cvid, length(X))
-    pointcloud.channels[:rgb] = smc
-  end
-  return pointcloud
-end
 
 
 #

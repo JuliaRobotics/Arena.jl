@@ -1,17 +1,19 @@
 # Types used in Arena.jl
 
-mutable struct DepthCamera
-  K::Array{Float64,2}
-  shape::Tuple{Int, Int}
-  skip::Int
-  D::Vector{Float64}
-  xs::Array{Float64}
-  ys::Array{Float64}
-  DepthCamera(K::Array{Float64,2};
-      shape::Tuple{Int,Int}=(480,640),
-      skip::Int=1,
-      D::Vector{Float64}=zeros(5) ) = new( K, shape, skip, D, Array{Float64,2}(), Array{Float64,2}() )
+const lmpoint = HyperSphere(Point(0.,0,0), 0.05)
+const greenMat = MeshPhongMaterial(color=RGBA(0, 1, 0, 0.5))
+const redMat = MeshPhongMaterial(color=RGBA(0, 1, 0, 0.5))
+
+"""
+	$(TYPEDEF)
+Type for 2d visualization
+"""
+struct BotVis2
+    vis::Visualizer
+    poses::Dict{Symbol, NTuple{3,Float64}}
+    landmarks::Dict{Symbol, NTuple{3,Float64}}
 end
+
 
 
 mutable struct SubmapColorCheat
@@ -38,23 +40,4 @@ mutable struct ArcPointsRangeSolve <: Function
   axis::Vector{Float64}
   ArcPointsRangeSolve(x1::Vector{Float64}, x2::Vector{Float64}, r::Float64) = new(x1,x2,zeros(0),r, zeros(2), 0.0, zeros(3))
   ArcPointsRangeSolve(x1::Vector{Float64}, x2::Vector{Float64}, x3::Vector{Float64}, r::Float64) = new(x1,x2,x3,r, zeros(3), 0.0, zeros(3))
-end
-
-
-
-abstract type DrawObject <: Function end
-
-# Modified ROV model from GrabCAD
-# http://grabcad.com/library/rov-7
-mutable struct DrawROV <: DrawObject
-  data
-  visid::Int
-  symbol::Symbol
-  offset::AffineMap
-end
-
-mutable struct DrawScene <: DrawObject
-  data
-  symbol::Symbol
-  offset::AffineMap
 end

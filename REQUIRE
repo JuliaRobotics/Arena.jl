@@ -22,3 +22,4 @@ DocStringExtensions
 # RoMEPlotting 0.0.1+
 # DrakeVisualizer 0.1.2
 Requires
+FileIO
