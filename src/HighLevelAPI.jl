@@ -41,16 +41,26 @@ end
 
 High level interface to launch webserver process that draws the factor graph contents using Three.js and MeshCat.jl.
 
-Example:
+Examples:
+---------
+
 ```julia
 # start webserver visible anywhere on the network on port 8000.
+using GraffSDK, Arena
 @async visualize( (robot, session), meanmax=:max )
-
-# also open a browser to connect to the three.js webserver
-@async visualize(fg, show=true)
 ```
 
-**Note** `plugins` strategy is not implemented yet -- added as placeholder future feature.
+Or view local memory `FactorGraph` version:
+```julia
+# also open a browser to connect to the three.js webserver
+using Arena
+@async visualize(fg, show=true, plugins=[myplugin1;])
+```
+
+See src/plugins/Template.jl for defining your own plugin to be rendered in the visualization loop.
+```julia
+function pluginCallback(vis::MeshCat.Visualizer, params::Dict{String, Any}, rose_fgl) ... end
+```
 """
 function visualize(rose_fgl::Union{FactorGraph, Tuple{<:AbstractString, <:AbstractString}};
                    show::Bool=true,
