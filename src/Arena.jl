@@ -119,6 +119,8 @@ function __init__()
     @info "--- GraffSDK is defined in the calling namespace, importing Graff functions..."
     include("GraffVisualizationService.jl")
     include("DeprecatedGraff.jl")
+    # Graff exports
+    export visualizeSession
   end
   @require RoMEPlotting="238d586b-a4bf-555c-9891-eda6fc5e55a2" begin
     @info "--- RoMEPlotting is defined in the calling namespace, importing RoMEPlotting functions..."
@@ -126,13 +128,8 @@ function __init__()
   @require DrakeVisualizer="49c7015b-b8db-5bc5-841b-fcb31c578176" begin
     @info "--- DrakeVisualizer is defined in the calling namespace, importing DrakeVisualizer functions..."
     include("DirectorVisService.jl")
+    # DrakeVisualizer exports
+    export drawdbdirector
+    end
   end
-end
-
-# Graff exports
-export
-  visualizeSession
-# DrakeVisualizer exports
-export
-  drawdbdirector
 end
