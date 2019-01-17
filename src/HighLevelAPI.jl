@@ -79,7 +79,6 @@ function visualize(rose_fgl::Union{FactorGraph, Tuple{<:AbstractString, <:Abstra
     # (softtype, already-drawn, mapEst)
     cachevars = Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}}()
 
-    @info "starting loop"
     while loopvis
 
         # TODO -- convert to list of plugin callbacks here, user can then register more plugins
@@ -94,7 +93,6 @@ function visualize(rose_fgl::Union{FactorGraph, Tuple{<:AbstractString, <:Abstra
         # do plugins like pointclouds / images / reprojections / etc. here
 
         # take a break and repeat
-        @info "end of loop"
         sleep(1)
     end
 

@@ -1,7 +1,10 @@
 # General visualization utils
 
 
-# create a new Visualizer window with home axis
+"""
+    $(SIGNATURES)
+Initialize empty visualizer window with home axis.  New browser window will be opened based on `show=true`.
+"""
 function startDefaultVisualization(;show::Bool=true,
                                     draworigin::Bool=true,
                                     originscale::Float64=1.0  )
@@ -11,7 +14,7 @@ function startDefaultVisualization(;show::Bool=true,
     viz = MeshCat.Visualizer()
     if draworigin
       setobject!( viz[:origin], Triad(originscale) )
-      settransform!( viz[:origin], drawtransform ∘ (Translation(0.0, 0.0, 0.0) ∘ LinearMap(CTs.Quat(1.0,0,0,0))))
+      settransform!( viz[:origin], drawtransform ∘ (Translation(0.0, 0.0, 0.0) ∘ LinearMap( CTs.Quat(1.0,0,0,0))) )
     end
 
     # open a new browser tab if required
@@ -20,27 +23,22 @@ function startDefaultVisualization(;show::Bool=true,
     return viz
 end
 
+
+
 """
     $(SIGNATURES)
-Initialize empty visualizer.
+
+Draw variables (triads and points) assing the `cachevars` dictionary is populated with the latest information.  Function intended for internal module use.
+
+`cachevars` === (softtype, [inviewertree=false;], [x,y,theta])
 """
-function initVisualizer(;show::Bool=true)
-    @warn "initVisualizer is deprecated, use startDefaultVisualization(..) instead"
-    startDefaultVisualization(show=show)
-end
-
-
-
 function visualizeVariableCache!(vis::Visualizer,
                                  cachevars::Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}};
                                  sessionId::String="Session"  )::Nothing
     #
 
-    @info "going for visualization loop"
-
     # draw all that the cache requires
     for (vsym, valpair) in cachevars
-        @show vsym
         # TODO -- consider upgrading to MultipleDispatch with actual softtypes
         if valpair[1] == :Point2
             visPoint2!(vis, sessionId, vsym, valpair[3],  updateonly=valpair[2][1])

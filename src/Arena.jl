@@ -98,6 +98,8 @@ include("VisualizationUtils.jl")
 include("VisualizePosesPoints.jl")
 include("PointClouds.jl")
 include("ModelVisualizationUtils.jl")
+include("Deprecated.jl")
+
 
 # service layers
 include("GraphVisualizationService.jl")

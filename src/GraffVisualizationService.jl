@@ -18,9 +18,7 @@ function cacheVariablePointEst!(rose::Tuple{<:AbstractString, <:AbstractString},
 
     vars = GraffSDK.ls()
 
-    @info "caching variables $(length(vars.nodes))"
     for nod in vars.nodes
-        @show nod.label, nod.mapEst
 
         # TODO fix hack -- use softtype instead, see http://www.github.com/GearsAD/GraffSDK.jl#72
         typesym = :Point2
