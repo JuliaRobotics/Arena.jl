@@ -7,7 +7,7 @@ function cacheVariablePointEst!(fgl::FactorGraph,
     #
 
     # get all variables
-    xx, ll = IIF.ls()
+    xx, ll = IIF.ls(fgl)
     vars = union(xx, ll)
 
     # update the variable point-estimate cache
