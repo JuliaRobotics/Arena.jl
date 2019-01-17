@@ -15,10 +15,10 @@ function visPoint2!(vis::Visualizer,
     if !updateonly
         sphere = HyperSphere(Point(0., 0, 0), scale)
         matcolor = MeshPhongMaterial(color=color)
-        setobject!(vis[sessionId][vsym], sphere, matcolor)
+        setobject!(vis[sessionId][:landmarks][vsym], sphere, matcolor)
     end
     tf = Translation(tfarr[1:2]..., zoffset )
-    settransform!(vis[sessionId][vsym], drawtransform ∘ tf)
+    settransform!(vis[sessionId][:landmarks][vsym], drawtransform ∘ tf)
     nothing
 end
 
@@ -35,10 +35,10 @@ function visPoint3!(vis::Visualizer,
     if !updateonly
         sphere = HyperSphere(Point(0., 0, 0), scale)
         matcolor = MeshPhongMaterial(color=color)
-        setobject!(vis[sessionId][vsym], sphere, matcolor)
+        setobject!(vis[sessionId][:landmarks][vsym], sphere, matcolor)
     end
     tf = Translation(tfarr[1:3]...)
-    settransform!(vis[sessionId][vsym], drawtransform ∘ tf)
+    settransform!(vis[sessionId][:landmarks][vsym], drawtransform ∘ tf)
     nothing
 end
 
@@ -55,10 +55,10 @@ function visPose2!(vis::Visualizer,
     #
     global drawtransform
     if !updateonly
-        setobject!(vis[sessionId][vsym], Triad(scale))
+        setobject!(vis[sessionId][:poses][vsym], Triad(scale))
     end
     tf = Translation(tfarr[1:2]..., zoffset) ∘ LinearMap(CTs.RotZ(tfarr[3]))
-    settransform!(vis[sessionId][vsym], drawtransform ∘ tf)
+    settransform!(vis[sessionId][:poses][vsym], drawtransform ∘ tf)
     nothing
 end
 
@@ -72,9 +72,9 @@ function visPose3!(vis::Visualizer,
     #
     global drawtransform
     if !updateonly
-        setobject!(vis[sessionId][vsym], Triad(scale))
+        setobject!(vis[sessionId][:poses][vsym], Triad(scale))
     end
     tf = Translation(tfarr[1:3]...) ∘ LinearMap(CTs.RotXYZ(tfarr[4:6]...))
-    settransform!(vis[sessionId][vsym], drawtransform ∘ tf)
+    settransform!(vis[sessionId][:poses][vsym], drawtransform ∘ tf)
     nothing
 end

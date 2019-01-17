@@ -35,6 +35,34 @@ function stopVis!()
 end
 
 
+function extractRobotSession!(rose_fgl::Union{FactorGraph, Tuple{<:AbstractString, <:AbstractString}},
+                              params::Dict{Symbol, Any}  )
+
+    config = nothing
+
+    # robot and session defaults
+    params[:robotId] = :Bot
+    params[:sessionId] = :Session
+    if isa(rose_fgl, FactorGraph)
+        if rose_fgl.robotname != "" && rose_fgl.robotname != "NA"
+            params[:robotId] = Symbol(rose_fgl.robotname)
+        end
+        if rose_fgl.sessionname != "" && rose_fgl.sessionname != "NA"
+            params[:sessionId] = Symbol(rose_fgl.sessionname)
+        end
+    else
+        # setup Graff config (iff a Graff visualization)
+        config = loadGraffConfig()
+        if config == nothing
+            error("Graff config is not set, please call setGraffConfig with a valid configuration.")
+        end
+        params[:robotId] = Symbol(rose_fgl[1])
+        params[:sessionId] = Symbol(rose_fgl[2])
+        config.robotId = string(params[:robotId])
+        config.sessionId = string(params[:sessionId])
+    end
+    return config
+end
 
 """
     $(SIGNATURES)
@@ -61,37 +89,29 @@ See src/plugins/Template.jl for defining your own plugin to be rendered in the v
 ```julia
 function pluginCallback(vis::MeshCat.Visualizer, params::Dict{String, Any}, rose_fgl) ... end
 ```
+
+**Note** plugins do not have to be defined in Arena, Main context or users repo is sufficient.
 """
 function visualize(rose_fgl::Union{FactorGraph, Tuple{<:AbstractString, <:AbstractString}};
                    show::Bool=true,
                    meanmax=:max,
-                   plugins::Vector{Function}=Function[]  )::Nothing
+                   plugins::Vector=Function[]  )::Nothing
     #
     global loopvis
     global drawtransform
 
     loopvis = true
 
-    # setup Graff config (iff a Graff visualization)
-    robotId   = "Session"
-    sessionId = "Bot"
-    if !isa(rose_fgl, FactorGraph)
-        config = loadGraffConfig()
-        if config == nothing
-            error("Graff config is not set, please call setGraffConfig with a valid configuration.")
-        end
-        config.robotId = string(rose_fgl[1])
-        config.sessionId = string(rose_fgl[2])
-    end
-
-    ## required variables
-    # the visualizer object itself
-    vis = startDefaultVisualization(show=show)
-
     # standard parameters dictionary
     params = Dict{Symbol, Any}()
 
-    # (softtype, already-drawn, mapEst)
+    # set up basics in params and load Graff config if available
+    extractRobotSession!(rose_fgl, params)
+
+    # the visualizer object itself
+    vis = startDefaultVisualization(show=show)
+
+    # default variable caching format:  (softtype, already-drawn, mapEst)
     params[:cachevars] = Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}}()
 
     # Prepend default plugins to be executed
@@ -99,8 +119,7 @@ function visualize(rose_fgl::Union{FactorGraph, Tuple{<:AbstractString, <:Abstra
 
     # run the visualization loop
     while loopvis
-        # perform special interest such as point clouds or interpose lines
-        # do plugins like pointclouds / images / reprojections / etc. here
+        # iterate through all listed plugin callbacks, such sa pointclouds / images / reprojections / etc.
         for callback in plugins
             try
                 callback(vis, params, rose_fgl)
@@ -113,8 +132,6 @@ function visualize(rose_fgl::Union{FactorGraph, Tuple{<:AbstractString, <:Abstra
         # take a break and repeat
         sleep(1)
     end
-
-    close(vis)
 
     @info "visualize is finalizing."
     nothing

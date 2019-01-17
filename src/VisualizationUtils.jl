@@ -28,30 +28,6 @@ end
 
 
 
-struct TagkTl
-	tagID::Symbol
-	kTl::Vector{Float64}
-end
-
-"""
-    drawTagsonPose!
-Draw tags on pose.
-""" #TODO: confirm xTc or cTx
-function drawTagsonPose!(botvis::Arena.BotVis2,
-                         tagsOnPoses::Dict{Symbol,Vector{TagkTl}};
-                         sessionId::String="Session" )
-    #
-	lmpoint = HyperSphere(Point(0.,0,0), 0.05)
-	blueMat = MeshPhongMaterial(color=RGBA(0, 0, 1, 0.5))
-
-	for x = keys(tagsOnPoses)
-	    for tag in tagsOnPoses[x]
-			setobject!(botvis.vis[:poses][x][tag.tagID], lmpoint, blueMat)
-			trans = Translation(tag.kTl)
-			settransform!(botvis.vis[:poses][x][tag.tagID], trans)
-	    end
-	end
-end
 
 # tagsOnPoses = Dict{Symbol, Vector{TagkTl}}()
 

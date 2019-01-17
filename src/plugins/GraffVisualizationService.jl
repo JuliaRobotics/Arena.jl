@@ -43,3 +43,20 @@ function cacheVariablePointEst!(dummyvis,
 
     return nothing
 end
+
+
+
+"""
+    $(SIGNATURES)
+
+Get all the bearing range constraints and measurement values from GraffSDK object (has in memory Graph twin).
+
+Usage: ReprojectBearingRange plugin.
+"""
+function getBearingRangesOnPose(rose::Tuple{<:AbstractString,<:AbstractString}, psym::Symbol)
+    tags = Dict()
+
+
+
+    return tags
+end

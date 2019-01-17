@@ -109,12 +109,9 @@ include("deprecated/Deprecated.jl")
 include("HighLevelAPI.jl")
 
 # plugins
-include("plugins/VisualizationDefault.jl")
-include("plugins/ReprojectBearingRange.jl")
 
 # Developer tools
 include("BotVis.jl")
-
 
 
 # Used by Requires.jl to check if packages are imported. Much cleaner than janky isdefined().
@@ -138,4 +135,14 @@ function __init__()
     export drawdbdirector
     end
   end
-end
+
+
+# load the internal plugins that may or may not depend on the @requires above
+include("plugins/VisualizationDefault.jl")
+include("plugins/ReprojectBearingRange.jl")
+
+
+
+
+
+end # module
