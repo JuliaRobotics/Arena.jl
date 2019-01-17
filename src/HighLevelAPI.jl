@@ -89,10 +89,10 @@ function visualize(rose_fgl::Union{FactorGraph, Tuple{<:AbstractString, <:Abstra
     vis = startDefaultVisualization(show=show)
 
     # standard parameters dictionary
-    params = Dict{String,Any}()
+    params = Dict{Symbol, Any}()
 
     # (softtype, already-drawn, mapEst)
-    params["cachevars"] = Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}}()
+    params[:cachevars] = Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}}()
 
     # Prepend default plugins to be executed
     plugins = union([cacheVariablePointEst!; visualizeVariableCache!], plugins)
@@ -113,6 +113,8 @@ function visualize(rose_fgl::Union{FactorGraph, Tuple{<:AbstractString, <:Abstra
         # take a break and repeat
         sleep(1)
     end
+
+    close(vis)
 
     @info "visualize is finalizing."
     nothing

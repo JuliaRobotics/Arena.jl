@@ -110,6 +110,7 @@ include("HighLevelAPI.jl")
 
 # plugins
 include("plugins/VisualizationDefault.jl")
+include("plugins/ReprojectBearingRange.jl")
 
 # Developer tools
 include("BotVis.jl")

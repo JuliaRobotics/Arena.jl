@@ -10,10 +10,10 @@ using Colors: Color, Colorant, RGB, RGBA, alpha, hex
 
 
 function cacheVariablePointEst!(dummyvis,
-                                params::Dict{String, Any},
+                                params::Dict{Symbol, Any},
                                 rose::Tuple{<:AbstractString, <:AbstractString}  )::Nothing
     #
-    cachevars = params["cachevars"]
+    cachevars = params[:cachevars]
     robotId   = string(rose[1])
     sessionId = string(rose[2])
 

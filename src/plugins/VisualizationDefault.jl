@@ -1,11 +1,11 @@
 # Default visualization functions
 
 function cacheVariablePointEst!(dummyvis,
-                                params::Dict{String,Any},
+                                params::Dict{Symbol, Any},
                                 fgl::FactorGraph;
                                 meanmax=:max  )::Nothing
     #
-    cachevars = params["cachevars"]
+    cachevars = params[:cachevars]
 
     # get all variables
     xx, ll = IIF.ls(fgl)
@@ -41,7 +41,7 @@ Draw variables (triads and points) assing the `cachevars` dictionary is populate
 `cachevars` === (softtype, [inviewertree=false;], [x,y,theta])
 """
 function visualizeVariableCache!(vis::Visualizer,
-                                 params::Dict{String, Any},
+                                 params::Dict{Symbol, Any},
                                  rose_fgl  )::Nothing
     #
 
@@ -54,7 +54,7 @@ function visualizeVariableCache!(vis::Visualizer,
 
 
     # draw all that the cache requires
-    for (vsym, valpair) in params["cachevars"]
+    for (vsym, valpair) in params[:cachevars]
         # TODO -- consider upgrading to MultipleDispatch with actual softtypes
         if valpair[1] == :Point2
             visPoint2!(vis, sessionId, vsym, valpair[3],  updateonly=valpair[2][1])
