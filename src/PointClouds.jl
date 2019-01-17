@@ -177,9 +177,14 @@ end
 Draw point cloud on pose.
 xTc -> pose to camera transform
 """ #TODO: confirm xTc or cTx
-function drawPointCloudonPose!(botvis::BotVis2, x::Symbol, pointcloud::PointCloud, xTc::SE3 = SE3([0,0,0],I))::Nothing
+function visPointCloudOnPose!(botvis::BotVis2, x::Symbol, pointcloud::PointCloud, xTc::SE3 = SE3([0,0,0],I))::Nothing
     setobject!(botvis.vis[:poses][x][:pc], pointcloud)
 	trans = Translation(xTc.t[1], xTc.t[2], xTc.t[3])∘LinearMap(Quat(xTc.R.R))
 	settransform!(botvis.vis[:poses][x][:pc], trans)
 	return nothing
+end
+
+function drawPointCloudonPose!(botvis::BotVis2, x::Symbol, pointcloud::PointCloud, xTc::SE3 = SE3([0,0,0],I))::Nothing
+    @warn "drawPointCloudonPose! decprecated, use visPointCloudOnPose! instead."
+    visPointCloudOnPose!(botvis, x, pointcloud, xTc)
 end

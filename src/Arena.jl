@@ -70,6 +70,11 @@ export
   CameraModel,
   initBotVis2,
   drawPoses2!,
+  cloudFromDepthImage,
+
+  # point clouds
+  visPointCloudOnPose!,
+  drawPointCloudonPose!,
   cloudFromDepthImage
 
 
