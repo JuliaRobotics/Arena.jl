@@ -82,7 +82,7 @@ function visualize(rose_fgl::Union{FactorGraph, Tuple{<:AbstractString, <:Abstra
     params = Dict{String,Any}()
 
     # (softtype, already-drawn, mapEst)
-    cachevars = Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}}()
+    params["cachevars"] = Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}}()
 
     # Prepend default plugins to be executed
     plugins = union([cacheVariablePointEst!; visualizeVariableCache!], plugins)
@@ -91,20 +91,14 @@ function visualize(rose_fgl::Union{FactorGraph, Tuple{<:AbstractString, <:Abstra
     while loopvis
         # perform special interest such as point clouds or interpose lines
         # do plugins like pointclouds / images / reprojections / etc. here
-        for ff in plugins
+        for callback in plugins
             try
-                ff(vis, cachevars, rose_fgl, params)
+                callback(vis, params, rose_fgl)
             catch e
-                @error "Visualization plugin failure -- ff=$(string(ff)) errored: $e"
+                @error "Visualization plugin failure -- callback=$(string(callback)) errored: $e"
                 @error stacktrace()
             end
         end
-
-        ## consider collapsing into single visualizeSession plugin -- can then register multiple sessions
-          # # rapid fetch of all point-value variable estimates (poses/landmarks/etc.)
-          # cacheVariablePointEst!( rose_fgl, cachevars )
-          # # vis or update all variable estimates
-          # visualizeVariableCache!( vis, cachevars )
 
         # take a break and repeat
         sleep(1)

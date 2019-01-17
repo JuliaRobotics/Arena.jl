@@ -33,9 +33,8 @@ Draw variables (triads and points) assing the `cachevars` dictionary is populate
 `cachevars` === (softtype, [inviewertree=false;], [x,y,theta])
 """
 function visualizeVariableCache!(vis::Visualizer,
-                                 cachevars::Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}},
-                                 rose_fgl,
-                                 params::Dict{String, Any}  )::Nothing
+                                 params::Dict{String, Any},
+                                 rose_fgl  )::Nothing
     #
 
     sessionId="Session"
@@ -47,7 +46,7 @@ function visualizeVariableCache!(vis::Visualizer,
 
 
     # draw all that the cache requires
-    for (vsym, valpair) in cachevars
+    for (vsym, valpair) in params["cachevars"]
         # TODO -- consider upgrading to MultipleDispatch with actual softtypes
         if valpair[1] == :Point2
             visPoint2!(vis, sessionId, vsym, valpair[3],  updateonly=valpair[2][1])

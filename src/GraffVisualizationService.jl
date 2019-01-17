@@ -10,10 +10,10 @@ using Colors: Color, Colorant, RGB, RGBA, alpha, hex
 
 
 function cacheVariablePointEst!(dummyvis,
-                                cachevarsl::Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}},
-                                rose::Tuple{<:AbstractString, <:AbstractString},
-                                params  )::Nothing
+                                params::Dict{String, Any},
+                                rose::Tuple{<:AbstractString, <:AbstractString}  )::Nothing
     #
+    cachevars = params["cachevars"]
     robotId   = string(rose[1])
     sessionId = string(rose[2])
 
@@ -38,7 +38,7 @@ function cacheVariablePointEst!(dummyvis,
             error("Unknown estimate dimension and naming")
         end
 
-        cachevarsl[Symbol(nod.label)] = (typesym, [false;], nod.mapEst)
+        cachevars[Symbol(nod.label)] = (typesym, [false;], nod.mapEst)
     end
 
     return nothing

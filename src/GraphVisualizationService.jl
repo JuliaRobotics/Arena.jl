@@ -2,11 +2,11 @@
 
 
 function cacheVariablePointEst!(dummyvis,
-                                cachevarsl::Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}},
-                                fgl::FactorGraph,
-                                params;
+                                params::Dict{String,Any},
+                                fgl::FactorGraph;
                                 meanmax=:max  )::Nothing
     #
+    cachevars = params["cachevars"]
 
     # get all variables
     xx, ll = IIF.ls(fgl)
@@ -18,13 +18,15 @@ function cacheVariablePointEst!(dummyvis,
         # get vertex and estimate from the factor graph object
         vert = getVert(fgl, vsym)
         X = getKDE(vert)
+
+        # TODO should be defined through params and not a keyword
         xmx = meanmax == :max ? getKDEMax(X) : getKDEMean(X)
 
         # get the variable type
         typesym = getData(vert).softtype |> typeof |> Symbol
 
         # cache variable type and estimated value (slightly memory intensive)
-        cachevarsl[vsym] = (typesym, [false;], xmx)
+        cachevars[vsym] = (typesym, [false;], xmx)
     end
 
     return nothing
