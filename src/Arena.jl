@@ -24,7 +24,7 @@ export
   buildmesh!,
   reconstruct,
   VisualizationContainer,
-  startdefaultvisualization,
+  startDefaultVisualization,
   newtriad!,
   visualize,
   stopVis!,
@@ -74,6 +74,12 @@ export
 
 
 const NothingUnion{T} = Union{Nothing, T}
+
+
+# Minimal globals
+global loopvis = true
+global drawtransform = Translation(0.0,0.0,0.0) ∘ LinearMap(Quat(1.0,0.0,0.0,0.0))
+
 
 # types and models
 include("CameraModel.jl")

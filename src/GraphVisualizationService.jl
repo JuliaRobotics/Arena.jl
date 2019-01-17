@@ -2,7 +2,7 @@
 
 
 function cacheVariablePointEst!(fgl::FactorGraph,
-                                cachevarsl::Dict{Symbol, Tuple{Symbol, Vector{Float64}}};
+                                cachevarsl::Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}};
                                 meanmax=:max  )::Nothing
     #
 
@@ -22,7 +22,7 @@ function cacheVariablePointEst!(fgl::FactorGraph,
         typesym = getData(vert).softtype |> typeof |> Symbol
 
         # cache variable type and estimated value (slightly memory intensive)
-        cachevarsl[vsym] = (typesym, xmx)
+        cachevarsl[vsym] = (typesym, [false;], xmx)
     end
 
     return nothing

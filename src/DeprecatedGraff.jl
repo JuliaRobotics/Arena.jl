@@ -1,3 +1,26 @@
+# Previous Graff based visualization functions
+
+# Internal transform functions
+function projectPose2(renderObject, node::NodeDetailsResponse)::Nothing
+    mapEst = node.properties["MAP_est"]
+    rotZ = 0
+    if "POSE" in node.labels
+        rotZ = mapEst[3] # Pose2, otherwise it's a Point2
+    end
+    trans = Translation(mapEst[1],mapEst[2],0) ∘ LinearMap(RotZ(rotZ))
+    settransform!(renderObject, trans)
+    return nothing
+end
+
+function projectPose3(renderObject, node::NodeDetailsResponse)::Nothing
+    mapEst = node.properties["MAP_est"]
+     # one day when this changes to quaternions -- for now though Pose3 is using Euler angles during infinite product approximations (but convolutions are generally done on a proper rotation manifold)
+     # yaw = convert(q).theta3
+    trans = Translation(mapEst[1],mapEst[2],mapEst[3])
+    settransform!(renderObject, LinearMap(RotZ(mapEst[6])) ∘ trans)
+    return nothing
+end
+
 
 # Callbacks for pose transforms
 # TODO -- MAKE OBSOLETE wishlist, use MultipleDispatch instead of global

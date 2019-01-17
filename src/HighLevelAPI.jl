@@ -4,8 +4,6 @@
 # - Memory direction with visualize(::FactorGraph, ...)
 # - Cloud access with visualize(robot::String, session::String, ...)
 
-global loopvis = true
-global drawtransform = Translation(0.0,0.0,0.0) ∘ LinearMap(Quat(1.0,0.0,0.0,0.0))
 
 """
     $(SIGNATURES)
@@ -25,74 +23,17 @@ function setGlobalDrawTransform!(;trans=Translation(0.0,0.0,0.0), quat::Rotation
   global drawtransform = trans ∘ LinearMap(quat)
 end
 
+"""
+    $(SIGNATURES)
 
+Toggle global boolean flag to terminate the visualization loop.
+"""
 function stopVis!()
   global loopvis
   loopvis = false
   nothing
 end
 
-
-
-
-"""
-    $(SIGNATURES)
-
-High level interface to launch webserver process that draws the factor graph contents using Three.js and MeshCat.jl.
-
-Example:
-```julia
-# start webserver visible anywhere on the network on port 8000.
-@async visualize(fg)
-
-# also open a browser to connect to the three.js webserver
-@async visualize(fg, show=true)
-```
-"""
-function visualize(fgl::FactorGraph; show::Bool=true, meanmax=:max)
-  global loopvis
-  global drawtransform
-
-  loopvis = true
-
-  vis = initVisualizer(show=show)
-  cachevars = Dict{Symbol, Vector{Float64}}()
-
-  while loopvis
-
-    # rapid fetch of all point-value variable estimates (poses/landmarks/etc.)
-    cacheVariablePointEst!( fgl, cachevars )
-
-    # vis or update all variable estimates
-    visualizeVariableCache!( vis, cachevars )
-
-    # perform special interest such as point clouds or interpose lines
-
-    # take a break and repeat
-    sleep(1)
-
-    # xx, ll = ls(fgl)
-    # for x in xx
-    #   X = getKDE(fgl, x)
-    #   xmx = meanmax == :max ? getKDEMax(X) : getKDEMean(X)
-    #
-    #   if !haskey(cachevars, x)
-    #     triad = Triad(1.0)
-    #     cachevars[x] = deepcopy(xmx)
-    #   end
-    #
-    #     setobject!(vis[:poses][x], triad)
-    #
-    #   cachevars[x][:] .= xmx
-    #   trans = Translation(xmx[1:2]..., 0.0) ∘ LinearMap(RotZ(xmx[3]))
-    #   settransform!(vis[:poses][x], drawtransform ∘ trans)
-    # end
-  sleep(1)
-  end
-
-  close(vis)
-  @info "visualize is finalizing."
-end
 
 
 """
@@ -104,42 +45,79 @@ Example:
 ```julia
 # start webserver visible anywhere on the network on port 8000.
 @async visualize( (robot, session), meanmax=:max )
+
+# also open a browser to connect to the three.js webserver
+@async visualize(fg, show=true)
 ```
+
+**Note** `plugins` strategy is not implemented yet -- added as placeholder future feature.
 """
-function visualize(robosess::Tuple{<:AbstractString, <:AbstractString};
+function visualize(rose_fgl::Union{FactorGraph, Tuple{<:AbstractString, <:AbstractString}};
                    show::Bool=true,
-                   meanmax=:max  )
+                   meanmax=:max,
+                   plugins::Dict{Symbol, Function}=Dict{Symbol, Function}()  )::Nothing
     #
     global loopvis
     global drawtransform
 
-    robotId   = string(robosess[1])
-    sessionId = string(robosess[2])
-
-    config = getGraffConfig()
-    if config == nothing
-        error("Graff config is not set, please call setGraffConfig with a valid configuration.")
+    # setup Graff config
+    robotId   = "Session"
+    sessionId = "Bot"
+    if !isa(rose_fgl, FactorGraph)
+        config = loadGraffConfig()
+        if config == nothing
+            error("Graff config is not set, please call setGraffConfig with a valid configuration.")
+        end
+        config.robotId = string(rose_fgl[1])
+        config.sessionId = string(rose_fgl[2])
     end
 
     loopvis = true
 
-    vis = initVisualizer(show=show)
-    cachevars = Dict{Symbol, Vector{Float64}}()
+    vis = startDefaultVisualization(show=show)
 
+    # (softtype, already-drawn, mapEst)
+    cachevars = Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}}()
+
+    @info "starting loop"
     while loopvis
 
-        # rapid fetch of all point-value variable estimates (poses/landmarks/etc.)
-        cacheVariablePointEst!( robosess, cachevars )
+        # TODO -- convert to list of plugin callbacks here, user can then register more plugins
 
-        # vis or update all variable estimates
-        visualizeVariableCache!( vis, cachevars )
+        ## consider collapsing into single visualizeSession plugin -- can then register multiple sessions
+          # rapid fetch of all point-value variable estimates (poses/landmarks/etc.)
+          cacheVariablePointEst!( rose_fgl, cachevars )
+          # vis or update all variable estimates
+          visualizeVariableCache!( vis, cachevars )
 
         # perform special interest such as point clouds or interpose lines
+        # do plugins like pointclouds / images / reprojections / etc. here
 
         # take a break and repeat
+        @info "end of loop"
         sleep(1)
     end
 
     @info "visualize is finalizing."
     nothing
 end
+
+
+### Some old code -- will be deleted soon enough
+
+# xx, ll = ls(fgl)
+# for x in xx
+#   X = getKDE(fgl, x)
+#   xmx = meanmax == :max ? getKDEMax(X) : getKDEMean(X)
+#
+#   if !haskey(cachevars, x)
+#     triad = Triad(1.0)
+#     cachevars[x] = deepcopy(xmx)
+#   end
+#
+#     setobject!(vis[:poses][x], triad)
+#
+#   cachevars[x][:] .= xmx
+#   trans = Translation(xmx[1:2]..., 0.0) ∘ LinearMap(RotZ(xmx[3]))
+#   settransform!(vis[:poses][x], drawtransform ∘ trans)
+# end

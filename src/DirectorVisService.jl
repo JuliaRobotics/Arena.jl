@@ -280,7 +280,7 @@ function drawdbdirector(;addrdict::NothingUnion{Dict{AbstractString, AbstractStr
   poseswithdepth = Dict()
   # poseswithdepth[:x1] = 0 # skip this pose -- there is no big data before ICRA
 
-  vis = startdefaultvisualization()
+  vis = startDefaultVisualization()
   sleep(1.0)
 
   param = Dict()
