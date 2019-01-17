@@ -109,7 +109,7 @@ include("deprecated/Deprecated.jl")
 include("HighLevelAPI.jl")
 
 # plugins
-include("plugin/VisualizationDefault.jl")
+include("plugins/VisualizationDefault.jl")
 
 # Developer tools
 include("BotVis.jl")
