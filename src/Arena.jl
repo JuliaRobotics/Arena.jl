@@ -13,7 +13,7 @@ using DocStringExtensions, ProgressMeter
 # using CaesarLCMTypes
 using Requires
 using FileIO
-#using RoMEPlotting # results in error similar to ordering error
+using JSON
 
 const CTs = CoordinateTransformations
 const TUs = TransformUtils

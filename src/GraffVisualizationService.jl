@@ -1,11 +1,10 @@
-using GraffSDK
+using .GraffSDK
 using Base64
 using MeshCat
 using CoordinateTransformations
 import GeometryTypes: HyperRectangle, HyperSphere, Vec, Point, HomogenousMesh, SignedDistanceField, Point3f0
 import ColorTypes: RGBA, RGB
 using Colors: Color, Colorant, RGB, RGBA, alpha, hex
-using JSON
 
 
 

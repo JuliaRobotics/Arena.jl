@@ -10,8 +10,9 @@ Type for 2d visualization
 """
 struct BotVis2
     vis::Visualizer
-    poses::Dict{Symbol, NTuple{3,Float64}}
-    landmarks::Dict{Symbol, NTuple{3,Float64}}
+    # poses::Dict{Symbol, NTuple{3,Float64}}
+    # landmarks::Dict{Symbol, NTuple{3,Float64}}
+    cachevars::Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}}
 end
 
 

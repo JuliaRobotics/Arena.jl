@@ -13,7 +13,10 @@ Initialize empty visualizer
 function initBotVis2(;showLocal::Bool = true)::BotVis2
     vis = Visualizer()
     showLocal && open(vis)
-    return BotVis2(vis, Dict{Symbol, NTuple{3,Float64}}(), Dict{Symbol, NTuple{3,Float64}}())
+    return BotVis2(vis,
+                   # Dict{Symbol, NTuple{3,Float64}}(),
+                   # Dict{Symbol, NTuple{3,Float64}}(),
+                   Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}}() )
 end
 
 
@@ -24,24 +27,23 @@ Draw all poses in an 2d factor graph, use meanmax = :max or :mean for distributi
 function drawPoses2!(botvis::BotVis2,
                      fgl::FactorGraph;
                      meanmax::Symbol=:max,
-                     triadLength=0.25  )::Nothing
+                     triadLength=0.25,
+                     sessionId::String="Session" )::Nothing
     #
     xx, ll = ls(fgl)
 
     for x in xx
         X = getKDE(fgl, x)
         xmx = meanmax == :max ? getKDEMax(X) : getKDEMean(X)
-        if !haskey(botvis.poses, x)
+        trans = Translation(xmx[1:2]..., 0.0) ∘ LinearMap(RotZ(xmx[3]))
+        if !haskey(botvis.cachevars, x)
             triad = Triad(triadLength)
-            setobject!(botvis.vis[:poses][x], triad)
-            push!(botvis.poses, x => (xmx[1],xmx[2],xmx[3]))
-            trans = Translation(xmx[1:2]..., 0.0) ∘ LinearMap(RotZ(xmx[3]))
-            settransform!(botvis.vis[:poses][x], trans)
+            setobject!(botvis.vis[Symbol(sessionId)][:poses][x], triad)
+            botvis.cachevars[x] = (:Pose2, [true;], xmx)
         else
-            botvis.poses[x] => (xmx[1],xmx[2],xmx[3])
-            trans = Translation(xmx[1:2]..., 0.0) ∘ LinearMap(RotZ(xmx[3]))
-            settransform!(botvis.vis[:poses][x], trans)
+            botvis.cachevars[x][3][:] = xmx
         end
+        settransform!(botvis.vis[Symbol(sessionId)][:poses][x], trans)
     end
 	return nothing
 end
@@ -52,23 +54,28 @@ Draw all landmarks in an 2d factor graph, use meanmax = :max or :mean for distri
 """
 function drawLandmarks2!(botvis::BotVis2,
                          fgl::FactorGraph;
-                         meanmax::Symbol=:max  )::Nothing
+                         meanmax::Symbol=:max,
+                         sessionId::String="Session"  )::Nothing
     #
     xx, ll = ls(fgl)
 
     for x in ll
         X = getKDE(fgl, x)
         xmx = meanmax == :max ? getKDEMax(X) : getKDEMean(X)
+        trans = Translation(xmx[1:2]..., 0.0)
         if !haskey(botvis.landmarks, x)
-            setobject!(botvis.vis[:landmarks][x], lmpoint,  greenMat)
-            push!(botvis.landmarks, x => (xmx[1],xmx[2],0.))
-            trans = Translation(xmx[1:2]..., 0.0)
-            settransform!(botvis.vis[:landmarks][x], trans)
+            setobject!(botvis.vis[Symbol(sessionId)][:landmarks][x], lmpoint, greenMat)
+            botvis.cachevars[x] = (:Point2, [true;], [xmx[1]; xmx[2]; 0.0 ] )
         else
-            botvis.landmarks[x] => (xmx[1],xmx[2],0.0)
-            trans = Translation(xmx[1:2]..., 0.0)
-            settransform!(botvis.vis[:landmarks][x], trans)
+            botvis.cachevars[x][3][1:2] = xmx[1:2]
         end
+        settransform!(botvis.vis[Symbol(sessionId)][:landmarks][x], trans)
     end
 	return nothing
 end
+
+
+
+
+
+#
