@@ -103,17 +103,17 @@ include("VisualizationUtils.jl")
 include("VisualizePosesPoints.jl")
 include("PointClouds.jl")
 include("ModelVisualizationUtils.jl")
-include("Deprecated.jl")
-
-
-# service layers
-include("GraphVisualizationService.jl")
+include("deprecated/Deprecated.jl")
 
 # user interaction
 include("HighLevelAPI.jl")
 
-# may be deprecated
+# plugins
+include("plugin/VisualizationDefault.jl")
+
+# Developer tools
 include("BotVis.jl")
+
 
 
 # Used by Requires.jl to check if packages are imported. Much cleaner than janky isdefined().
@@ -122,8 +122,8 @@ function __init__()
   # Checking what to import from the calling module
   @require GraffSDK="d47733cc-d211-5467-9efc-951b5b83f246" begin
     @info "--- GraffSDK is defined in the calling namespace, importing Graff functions..."
-    include("GraffVisualizationService.jl")
-    include("DeprecatedGraff.jl")
+    include("plugins/GraffVisualizationService.jl")
+    include("deprecated/DeprecatedGraff.jl")
     # Graff exports
     export visualizeSession
   end
