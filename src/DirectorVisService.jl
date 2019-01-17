@@ -1,23 +1,11 @@
 
 
 
-# create a new Director window with home axis
-function startdefaultvisualization(;newwindow=true,draworigin=true)
-  DrakeVisualizer.any_open_windows() || DrakeVisualizer.new_window(); #DrakeVisualizer.new_window()
-  viz = DrakeVisualizer.Visualizer()
-  if draworigin
-    setgeometry!(viz[:origin], Triad())
-    settransform!(viz[:origin], Translation(0, 0, 0.0) ∘ LinearMap(Rotations.Quat(1.0,0,0,0)))
-  end
-
-  # realtime, rttfs = Dict{Symbol, Any}(), Dict{Symbol, AbstractAffineMap}()
-  # dc = VisualizationContainer(Dict{Symbol, Visualizer}(), triads, trposes, meshes, realtime, rttfs)
-  # visualizetriads!(dc)
-  return viz
-end
-
-
-function visualizeDensityMesh!(vc::DrakeVisualizer.Visualizer, fgl::FactorGraph, lbl::Symbol; levels=3, meshid::Int=2)
+function visualizeDensityMesh!(vc,
+                               fgl::FactorGraph,
+                               lbl::Symbol;
+                               levels=3,
+                               meshid::Int=2  )
 
   pl1 = marginal(getVertKDE(fgl,lbl),[1;2;3])
 
@@ -47,112 +35,10 @@ end
 
 
 
-function drawpose!(viz::DrakeVisualizer.Visualizer, sym::Symbol;
-      tf::CoordinateTransformations.AbstractAffineMap=Translation(0.0,0,0)∘LinearMap(CoordinateTransformations.AngleAxis(0.0,0,0,1.0)),
-      session::AbstractString="",
-      collection::Symbol=:poses)
-  #
-  if session == ""
-    setgeometry!(viz[collection][sym], Triad())
-    settransform!(viz[collection][sym], tf)
-  else
-    sesssym=Symbol(session)
-    setgeometry!(viz[sesssym][collection][sym], Triad())
-    settransform!(viz[sesssym][collection][sym], tf)
-  end
-  nothing
-end
-
-function drawpoint!(viz::DrakeVisualizer.Visualizer,
-      sym::Symbol;
-      tf=Translation(0.0,0,0),
-      session::AbstractString="",
-      scale=0.05,
-      color=RGBA(0., 1, 0, 0.5),
-      collection::Symbol=:landmarks  )
-  #
-
-  sphere = HyperSphere(Point(0., 0, 0), scale)
-  csph = GeometryData(sphere, color)
-  if session == ""
-    setgeometry!(viz[collection][sym], csph)
-    settransform!(viz[collection][sym], tf)
-  else
-    sesssym=Symbol(session)
-    setgeometry!(viz[sesssym][collection][sym], csph)
-    settransform!(viz[sesssym][collection][sym], tf)
-  end
-  nothing
-end
-
-
-function drawpose!(vc::DrakeVisualizer.Visualizer,
-      vert::Graphs.ExVertex,
-      topoint::Function,
-      dotwo::Bool, dothree::Bool;
-      session::AbstractString="NA"  )
-  #
-  den = getVertKDE(vert)
-  p = Symbol(vert.label)
-  pointval = topoint(den)
-  tf = nothing
-  if dothree
-    q = convert(TransformUtils.Quaternion, Euler(pointval[4:6]...))
-    tf = Translation(pointval[1:3]...)∘LinearMap(Quat(q.s,q.v...))
-    drawpose!(vc, p, tf=tf, session=session)
-  elseif dotwo
-    tf = Translation(pointval[1],pointval[2],0.0)∘LinearMap(Rotations.AngleAxis(pointval[3],0,0,1.0))
-    drawpose!(vc, p, tf=tf, session=session)
-  end
-  return tf
-end
-
-function drawpose!(vc::DrakeVisualizer.Visualizer,
-      vert::Graphs.ExVertex;
-      session::AbstractString="NA",
-      drawtype::Symbol=:max )
-  #
-
-  topoint = gettopoint(drawtype)
-  X = getVal(vert)
-  dotwo, dothree = getdotwothree(Symbol(vert.label), X)
-  drawpose!(vc, vert, topoint, dotwo, dothree, session=session)
-end
-
-function drawpoint!(vc::DrakeVisualizer.Visualizer,
-      vert::Graphs.ExVertex,
-      topoint::Function,
-      dotwo::Bool, dothree::Bool;
-      session::AbstractString="NA"  )
-  #
-  den = getVertKDE(vert)
-  p = Symbol(vert.label)
-  pointval = topoint(den)
-  if dothree
-    q = convert(TransformUtils.Quaternion, Euler(pointval[4:6]...))
-    drawpoint!(vc, p, tf=Translation(pointval[1:3]...), session=session)
-  elseif dotwo
-    drawpoint!(vc, p, tf=Translation(pointval[1],pointval[2],0.0), session=session)
-  end
-  nothing
-end
-
-
-function drawpoint!(vc::DrakeVisualizer.Visualizer,
-        vert::Graphs.ExVertex;
-        session::AbstractString="NA",
-        drawtype::Symbol=:max )
-  #
-  topoint = gettopoint(drawtype)
-  X = getVal(vert)
-  dotwo, dothree = getdotwothree(Symbol(vert.label), X)
-  drawpoint!(vc, vert, topoint, dotwo, dothree, session=session)
-  nothing
-end
-
-function drawgt!(vc::DrakeVisualizer.Visualizer, sym::Symbol,
-      gtval::Tuple{Symbol, Vector{Float64}};
-      session::AbstractString="NA"  )
+function drawgt!(vc,
+                 sym::Symbol,
+                 gtval::Tuple{Symbol, Vector{Float64}};
+                 session::AbstractString="NA"  )
   #
   if gtval[1] == :XYZ
     drawpoint!(vc, sym, tf=Translation(gtval[2][1],gtval[2][2],gtval[2][3]),
@@ -173,12 +59,12 @@ function drawgt!(vc::DrakeVisualizer.Visualizer, sym::Symbol,
 end
 
 # TODO -- maybe we need RemoteFactorGraph type
-function visualizeallposes!(vc::DrakeVisualizer.Visualizer,
-    fgl::FactorGraph;
-    drawlandms::Bool=true,
-    drawtype::Symbol=:max,
-    gt::Dict{Symbol, Tuple{Symbol,Vector{Float64}}}=Dict{Symbol, Tuple{Symbol,Vector{Float64}}}(),
-    api::DataLayerAPI=localapi )
+function visualizeallposes!(vc,
+                            fgl::FactorGraph;
+                            drawlandms::Bool=true,
+                            drawtype::Symbol=:max,
+                            gt::Dict{Symbol, Tuple{Symbol,Vector{Float64}}}=Dict{Symbol, Tuple{Symbol,Vector{Float64}}}(),
+                            api::DataLayerAPI=localapi  )
   #
   session = fgl.sessionname
   topoint = gettopoint(drawtype)
@@ -216,9 +102,9 @@ end
 
 
 
-function drawposepoints!(vis::DrakeVisualizer.Visualizer,
-      vert::Graphs.ExVertex;
-      session::AbstractString="NA"  )
+function drawposepoints!(vis,
+                         vert::Graphs.ExVertex;
+                         session::AbstractString="NA"  )
   #
   vsym = Symbol(vert.label)
   X = getVal(vert)
@@ -243,7 +129,7 @@ function drawposepoints!(vis::DrakeVisualizer.Visualizer,
   nothing
 end
 
-function drawposepoints!(vis::DrakeVisualizer.Visualizer,
+function drawposepoints!(vis,
       fgl::FactorGraph,
       sym::Symbol;
       session::AbstractString="NA",
@@ -256,7 +142,7 @@ end
 
 
 
-function deletemeshes!(vc::DrakeVisualizer.Visualizer)
+function deletemeshes!(vc)
   delete!(vc[:meshes])
 end
 
@@ -267,14 +153,14 @@ end
 
 Draw a line segment between to vertices.
 """
-function drawLineBetween!(vis::DrakeVisualizer.Visualizer,
-        session::AbstractString,
-        fr::Graphs.ExVertex,
-        to::Graphs.ExVertex;
-        scale=0.01,
-        name::Symbol=:edges,
-        subname::Union{Nothing,Symbol}=nothing,
-        color=RGBA(0,1.0,0,0.5)   )
+function drawLineBetween!(vis,
+                          session::AbstractString,
+                          fr::Graphs.ExVertex,
+                          to::Graphs.ExVertex;
+                          scale=0.01,
+                          name::Symbol=:edges,
+                          subname::Union{Nothing,Symbol}=nothing,
+                          color=RGBA(0,1.0,0,0.5)   )
   #
   dotwo, dothree = getdotwothree(Symbol(fr.label), getVal(fr))
 
@@ -306,15 +192,15 @@ end
 
 Draw a line segment between to nodes in the factor graph.
 """
-function drawLineBetween!(vis::DrakeVisualizer.Visualizer,
-        fgl::FactorGraph,
-        fr::Symbol,
-        to::Symbol;
-        scale=0.01,
-        name::Symbol=:edges,
-        subname::Union{Nothing,Symbol}=nothing,
-        color=RGBA(0,1.0,0,0.5),
-        api::DataLayerAPI=dlapi  )
+function drawLineBetween!(vis,
+                          fgl::FactorGraph,
+                          fr::Symbol,
+                          to::Symbol;
+                          scale=0.01,
+                          name::Symbol=:edges,
+                          subname::Union{Nothing,Symbol}=nothing,
+                          color=RGBA(0,1.0,0,0.5),
+                          api::DataLayerAPI=dlapi  )
   #
   v1 = getVert(fgl, fr, api=api)
   v2 = getVert(fgl, to, api=api)
@@ -323,37 +209,17 @@ function drawLineBetween!(vis::DrakeVisualizer.Visualizer,
 end
 
 
-function drawLineBetween!(vis::DrakeVisualizer.Visualizer,
-        cgl::CloudGraph,
-        session::AbstractString,
-        fr::Symbol,
-        to::Symbol;
-        scale=0.01,
-        name::Symbol=:edges,
-        subname::Union{Nothing,Symbol}=nothing,
-        color=RGBA(0,1.0,0,0.5)  )
-  #
-
-  cv1 = getCloudVert(cgl, session, sym=fr)
-  v1 = cloudVertex2ExVertex(cv1)
-  cv2 = getCloudVert(cgl, session, sym=to)
-  v2 = cloudVertex2ExVertex(cv2)
-
-  drawLineBetween!(vis,session,v1,v2,scale=scale,name=name,subname=subname,color=color   )
-  nothing
-end
-
 """
     $(SIGNATURES)
 
 Assume odometry chain and draw edges between subsequent poses. Use keyword arguments to change colors, etc.
 """
-function drawAllOdometryEdges!(vis::DrakeVisualizer.Visualizer,
-      fgl::FactorGraph;
-      scale=0.01,
-      name::Symbol=:edges,
-      color=RGBA(0,1.0,0,0.5),
-      api::DataLayerAPI=dlapi  )
+function drawAllOdometryEdges!(vis,
+                               fgl::FactorGraph;
+                               scale=0.01,
+                               name::Symbol=:edges,
+                               color=RGBA(0,1.0,0,0.5),
+                               api::DataLayerAPI=dlapi  )
   #
   xx, ll = ls(fgl)
 
@@ -365,10 +231,10 @@ function drawAllOdometryEdges!(vis::DrakeVisualizer.Visualizer,
 end
 
 
-function drawAllBinaryFactorEdges!(vis::DrakeVisualizer.Visualizer,
-      fgl::FactorGraph;
-      scale=0.01,
-      api::DataLayerAPI=dlapi )
+function drawAllBinaryFactorEdges!(vis,
+                                   fgl::FactorGraph;
+                                   scale=0.01,
+                                   api::DataLayerAPI=dlapi  )
   #
   sloth = findAllBinaryFactors(fgl, api=api)
 
@@ -381,122 +247,18 @@ end
 
 
 
-
-function drawAllBinaryFactorEdges!(vis::DrakeVisualizer.Visualizer,
-      cgl::CloudGraph,
-      session::AbstractString;
-      scale=0.01  )
-  #
-
-  sloth = findAllBinaryFactors(cgl, session)
-
-  @showprogress 1 "Drawing all binary edges..." for (teeth, toe) in sloth
-    color = pointToColor(toe[3])
-    drawLineBetween!(vis, cgl, session, toe[1], toe[2], subname=toe[3], scale=scale, color=color)
-  end
-  nothing
-end
-
-function drawpointcloud!(vis::DrakeVisualizer.Visualizer,
-        poseswithdepth::Dict,
-        vsym::Symbol,
-        pointcloud,
-        va,
-        param::Dict,
-        sesssym::Symbol;
-        # imshape=(480,640),
-        wTb::CoordinateTransformations.AbstractAffineMap=
-              Translation(0,0,0.0) ∘ LinearMap(
-              CoordinateTransformations.Quat(1.0, 0, 0, 0))   )
-        # bTc::CoordinateTransformations.AbstractAffineMap=
-        #       Translation(0,0,0.6) ∘ LinearMap(
-        #       CoordinateTransformations.Quat(0.5, -0.5, 0.5, -0.5))  )
-  #
-
-  pcsym = Symbol(string("pc_", va != "none" ? va : "ID"))
-  setgeometry!(vis[sesssym][pcsym][vsym][:pose], Triad())
-  settransform!(vis[sesssym][pcsym][vsym][:pose], wTb) # also updated as parallel track
-  setgeometry!(vis[sesssym][pcsym][vsym][:pose][:cam], Triad())
-  settransform!(vis[sesssym][pcsym][vsym][:pose][:cam], param["bTc"] )
-  setgeometry!(vis[sesssym][pcsym][vsym][:pose][:cam][:pc], pointcloud )
-
-  # these poses need to be update if the point cloud is to be moved
-  if !haskey(poseswithdepth,vsym)
-    thetype = typeof(vis[sesssym][pcsym][vsym][:pose])
-    poseswithdepth[vsym] = Vector{ thetype }()
-  end
-  push!(poseswithdepth[vsym], vis[sesssym][pcsym][vsym][:pose])
-
-  nothing
-end
-
-
-function fetchdrawdepthcloudbycvid!(vis::DrakeVisualizer.Visualizer,
-      cloudGraph::CloudGraphs.CloudGraph,
-      cvid::Int,
-      vsym::Symbol,
-      poseswithdepth::Dict,
-      param::Dict,
-      sesssym::Symbol;
-      depthcolormaps=Dict(),
-      # imshape=(480,640),
-      wTb::CoordinateTransformations.AbstractAffineMap=
-            Translation(0,0,0.0) ∘ LinearMap(
-            CoordinateTransformations.Quat(1.0, 0, 0, 0))   )
-      # bTc::CoordinateTransformations.AbstractAffineMap=
-      #       Translation(0,0,0.6) ∘ LinearMap(
-      #       CoordinateTransformations.Quat(0.5, -0.5, 0.5, -0.5))  )
-  #
-
-  if !haskey(poseswithdepth, vsym)
-    cache = Dict()
-
-    # fetch copy of big data from CloudGraphs
-    cv = CloudGraphs.get_vertex(cloudGraph, cvid, true )
-
-    # depthcolormaps = could be one or more or these options
-    # 0, 1 or 2+ color maps per pointcloud
-    #  ("none" => "depthframe_image", "none" => "pointcloud")
-    # or
-    #  ("keyframe_rgb" => "depthframe_image",
-    #  "keyframe_segnet" => "depthframe_image")
-    # or
-    #  ("colors" => "pointcloud")
-    for (va, ke) in depthcolormaps
-      # prep the detph pointcloud
-      cachepointclouds!(cache, cv, ke, param)
-
-      if haskey(cache, ke)
-        rgb = Array{Colorant,2}()
-        if va[1:4] != "none"
-          rgb = retrievePointcloudColorInfo!(cv, va)
-        end
-
-        # add color information to the pointcloud
-        pointcloud = prepcolordepthcloud!( cvid, cache[ke], rgb=rgb )
-
-        # publish the pointcloud data to Director viewer
-        if pointcloud != nothing
-          drawpointcloud!(vis, poseswithdepth, vsym, pointcloud, va, param, sesssym, wTb=wTb)
-        end
-      end
-    end
-  end
-  nothing
-end
-
 """
     $(SIGNATURES)
 
 Update all triads listed in poseswithdepth[Symbol(vert.label)] with wTb. Prevents cycles in
-remote tree viewer of DrakeVisualizer.
+remote tree viewer of Visualizer.
 """
-function updateparallelposes!(vis::DrakeVisualizer.Visualizer,
-      vert::Graphs.ExVertex,
-      poseswithdepth::Dict;
-      wTb::CoordinateTransformations.AbstractAffineMap=
-            Translation(0,0,0.0) ∘ LinearMap(
-            CoordinateTransformations.Quat(1.0, 0, 0, 0))    )
+function updateparallelposes!(vis,
+                              vert::Graphs.ExVertex,
+                              poseswithdepth::Dict;
+                              wTb::CoordinateTransformations.AbstractAffineMap=
+                                    Translation(0,0,0.0) ∘ LinearMap(
+                                    CoordinateTransformations.Quat(1.0, 0, 0, 0))    )
   #
 
   if haskey(poseswithdepth, Symbol(vert.label))
@@ -507,99 +269,7 @@ function updateparallelposes!(vis::DrakeVisualizer.Visualizer,
   nothing
 end
 
-function fetchdrawposebycvid!(vis::DrakeVisualizer.Visualizer,
-      cloudGraph::CloudGraphs.CloudGraph,
-      cvid::Int,
-      poseswithdepth::Dict,
-      param::Dict;
-      session::AbstractString="",
-      depthcolormaps=Dict()  )
-      # imshape=(480,640),
-      # bTc::CoordinateTransformations.AbstractAffineMap=
-      #       Translation(0,0,0.6) ∘ LinearMap(
-      #       CoordinateTransformations.Quat(0.5, -0.5, 0.5, -0.5))  )
-  #
 
-  # skip big data elements at first
-  cv = CloudGraphs.get_vertex(cloudGraph, cvid, false )
-  vert = cloudVertex2ExVertex(cv)
-
-  # extract and draw new poses
-  wTb = drawpose!(vis, vert, session=session )
-  # also draw pose points from variable marginal belief approximation KDE
-  drawposepoints!(vis, vert, session=session )
-
-  # also update any parallel transform paths, previous and new
-  updateparallelposes!(vis, vert, poseswithdepth, wTb=wTb)
-
-  # check if we can draw depth pointclouds, and add new ones to parallel transform paths
-  fetchdrawdepthcloudbycvid!(vis,
-        cloudGraph,
-        cvid,
-        Symbol(vert.label),
-        poseswithdepth,
-        param,
-        Symbol(session),
-        depthcolormaps=depthcolormaps,
-        # imshape=imshape,
-        wTb=wTb  )
-
-  sleep(0.005)
-  nothing
-end
-
-# dbcoll,
-function drawdbsession(vis::DrakeVisualizer.Visualizer,
-      cloudGraph::CloudGraphs.CloudGraph,
-      addrdict,
-      param::Dict,
-      poseswithdepth::Dict )
-      # bTc::CoordinateTransformations.AbstractAffineMap=
-      #       Translation(0,0,0.6) ∘ LinearMap(
-      #       CoordinateTransformations.Quat(0.5, -0.5, 0.5, -0.5) )    )
-  #
-
-  @show session = addrdict["session"]
-  sesssym = Symbol(session)
-  DRAWDEPTH = addrdict["draw depth"]=="y" # not going to support just yet
-  DRAWEDGES = addrdict["draw edges"]=="y" # not going to support just yet
-
-
-  # fg = Caesar.initfg(sessionname=addrdict["session"], cloudgraph=cloudGraph)
-  println("Fetching pose IDs to be drawn...")
-  IDs = getExVertexNeoIDs(cloudGraph.neo4j.connection, label="POSE", session=session, reqbackendset=false);
-  landmIDs = getExVertexNeoIDs(cloudGraph.neo4j.connection, label="LANDMARK", session=session, reqbackendset=false);
-
-  @showprogress 1 "Drawing LANDMARK IDs..." for (vid,cvid) in landmIDs
-    cv = nothing
-    # skip big data elements
-    cv = CloudGraphs.get_vertex(cloudGraph, cvid, false )
-    vert = cloudVertex2ExVertex(cv)
-    x = Symbol(vert.label)
-
-    # vert = getVert(fg, x, api=localapi)
-    drawpoint!(vis, vert, session=session)
-    # drawposepoints!(vis, vert, session=session )
-  end
-
-  depthcolormaps = !DRAWDEPTH  ? Dict() : Dict("keyframe_rgb" => "depthframe_image", "keyframe_segnet" => "depthframe_image", "BSONcolors" => "BSONpointcloud", "none"=>"BSONpointcloud")
-
-  @showprogress 1 "Drawing POSE IDs..." for (vid,cvid) in IDs
-    fetchdrawposebycvid!(vis,
-          cloudGraph,
-          cvid,
-          poseswithdepth,
-          param,
-          session=session,
-          depthcolormaps=depthcolormaps  )
-  end
-
-  if DRAWEDGES
-    println("Going to draw edges...")
-    drawAllBinaryFactorEdges!(vis, cloudGraph, session)
-  end
-  nothing
-end
 
 
 function drawdbdirector(;addrdict::NothingUnion{Dict{AbstractString, AbstractString}}=nothing)
@@ -610,7 +280,7 @@ function drawdbdirector(;addrdict::NothingUnion{Dict{AbstractString, AbstractStr
   poseswithdepth = Dict()
   # poseswithdepth[:x1] = 0 # skip this pose -- there is no big data before ICRA
 
-  vis = startdefaultvisualization()
+  vis = startDefaultVisualization()
   sleep(1.0)
 
   param = Dict()
@@ -636,58 +306,3 @@ end
 #syntax support lost in 0.5, but see conversation at
 # function (dmdl::DrawObject)(vc::VisualizationContainer)
 # issue  https://github.com/JuliaLang/julia/issues/14919
-
-function (dmdl::DrawROV)(vc::DrakeVisualizer.Visualizer,
-        am::AbstractAffineMap  )
-  #
-  settransform!(vc[:models][dmdl.symbol], am ∘ dmdl.offset)
-  nothing
-end
-function (dmdl::DrawROV)(vc::DrakeVisualizer.Visualizer,
-        t::Translation,
-        R::Rotation  )
-  #
-  dmdl(vc, Translation ∘ LinearMap(R))
-end
-function (dmdl::DrawROV)(vc::DrakeVisualizer.Visualizer)
-  setgeometry!(vc[:models][dmdl.symbol], dmdl.data)
-  dmdl(vc, Translation(0.,0,0) ∘ LinearMap(Rotations.Quat(1.0,0,0,0)) )
-  nothing
-end
-
-
-function (dmdl::DrawScene)(vc::DrakeVisualizer.Visualizer,
-        am::AbstractAffineMap  )
-  #
-  settransform!(vc[:env][dmdl.symbol], am ∘ dmdl.offset)
-  nothing
-end
-function (dmdl::DrawScene)(vc::DrakeVisualizer.Visualizer,
-        t::Translation,
-        R::Rotation  )
-  #
-  dmdl(vc, Translation ∘ LinearMap(R))
-end
-function (dmdl::DrawScene)(vc::DrakeVisualizer.Visualizer)
-  setgeometry!(vc[:env][dmdl.symbol], dmdl.data)
-  dmdl(vc, Translation(0.,0,0) ∘ LinearMap(Rotations.Quat(1.0,0,0,0)) )
-  nothing
-end
-
-
-function animatearc(vc::DrakeVisualizer.Visualizer,
-            drmodel::DrawObject,
-            as::ArcPointsRangeSolve;
-            N::Int=100,
-            delaytime::Float64=0.05,
-            initrot::Rotation=Rotations.Quat(1.0,0,0,0),
-            from::Number=0,
-            to::Number=1  )
-  #
-  for t in linspace(from,to,N)
-    am = parameterizeArcAffineMap(t, as, initrot=initrot )
-    drmodel(vc, am )
-    sleep(delaytime)
-  end
-  nothing
-end

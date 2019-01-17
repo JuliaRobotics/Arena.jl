@@ -1,18 +1,22 @@
 module Arena
 
-
 # due to issue with ImageMagick and Pkg importing, the order is very sensitive here!
 # see https://github.com/JuliaIO/ImageMagick.jl/issues/142
 using ImageMagick
 using Caesar, ImageView, Images, MeshIO, MeshCat
 
-using Rotations, CoordinateTransformations, TransformUtils
+using Rotations, CoordinateTransformations
+using TransformUtils
 using Graphs, NLsolve
 using GeometryTypes, ColorTypes
 using DocStringExtensions, ProgressMeter
+# using CaesarLCMTypes
+using Requires
+using FileIO
+using JSON
 
-#using RoMEPlotting # results in error similar to ordering error
-
+const CTs = CoordinateTransformations
+const TUs = TransformUtils
 
 export
   meshgrid,
@@ -20,7 +24,7 @@ export
   buildmesh!,
   reconstruct,
   VisualizationContainer,
-  startdefaultvisualization,
+  startDefaultVisualization,
   newtriad!,
   visualize,
   stopVis!,
@@ -53,56 +57,92 @@ export
   animatearc,
 
   # ImageUtils
+  # image_tToRgb,
+  rgbUint8ToRgb,
+  rgbToJpeg,
+  rgbToPng,
   imshowhackpng,
   cloudimshow,
   imshowhack,
-  roi
+  roi,
+
+  # BotVis
+  CameraModel,
+  initBotVis2,
+  drawPoses2!,
+  cloudFromDepthImage,
+
+  # point clouds
+  visPointCloudOnPose!,
+  drawPointCloudonPose!,
+  cloudFromDepthImage
+
 
 const NothingUnion{T} = Union{Nothing, T}
 
 
+# Minimal globals
+global loopvis = true
+global drawtransform = Translation(0.0,0.0,0.0) ∘ LinearMap(Quat(1.0,0.0,0.0,0.0))
+
+
+# types and models
+include("CameraModel.jl")
 include("VisualizationTypes.jl")
+include("RobotSceneModels.jl")
+
+# utils
 include("GeneralUtils.jl")
+include("ColorUtils.jl")
+include("VisualizeLines.jl")
+include("MeshUtils.jl")
+include("BigDataUtils.jl")
 include("ImageUtils.jl")
+include("AnimationUtils.jl")
 include("VisualizationUtils.jl")
+include("VisualizePosesPoints.jl")
+include("PointClouds.jl")
 include("ModelVisualizationUtils.jl")
+include("deprecated/Deprecated.jl")
+
+# user interaction
 include("HighLevelAPI.jl")
+
+# plugins
+
+# Developer tools
 include("BotVis.jl")
 
-# include("DBVisualizationUtils.jl")
 
-try
-    getfield(Main, :RoMEPlotting)
-
-    # already exported by RoMEPlotting
-    # export
-    #   plot,
-    #   plotKDE,
-    #   drawPoses,
-    #   drawPosesLandm,
-    #   drawsubmap
-
-    @info "Including RoMEPlotting functionality..."
-catch e
-
-end
-
-
-try
-    getfield(Main, :DrakeVisualizer)
-
-    export
-      drawdbdirector
-
+# Used by Requires.jl to check if packages are imported. Much cleaner than janky isdefined().
+function __init__()
+  @info "Conditionally importing RoMEPlotting, GraffSDK, and Director..."
+  # Checking what to import from the calling module
+  @require GraffSDK="d47733cc-d211-5467-9efc-951b5b83f246" begin
+    @info "--- GraffSDK is defined in the calling namespace, importing Graff functions..."
+    include("plugins/GraffVisualizationService.jl")
+    include("deprecated/DeprecatedGraff.jl")
+    # Graff exports
+    export visualizeSession
+  end
+  @require RoMEPlotting="238d586b-a4bf-555c-9891-eda6fc5e55a2" begin
+    @info "--- RoMEPlotting is defined in the calling namespace, importing RoMEPlotting functions..."
+  end
+  @require DrakeVisualizer="49c7015b-b8db-5bc5-841b-fcb31c578176" begin
+    @info "--- DrakeVisualizer is defined in the calling namespace, importing DrakeVisualizer functions..."
     include("DirectorVisService.jl")
-
-    @show "Including DrakeVisualizer functionality..."
-catch e
-
-end
-
+    # DrakeVisualizer exports
+    export drawdbdirector
+    end
+  end
 
 
+# load the internal plugins that may or may not depend on the @requires above
+include("plugins/VisualizationDefault.jl")
+include("plugins/ReprojectBearingRange.jl")
 
 
-end
+
+
+
+end # module
