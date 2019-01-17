@@ -33,9 +33,18 @@ Draw variables (triads and points) assing the `cachevars` dictionary is populate
 `cachevars` === (softtype, [inviewertree=false;], [x,y,theta])
 """
 function visualizeVariableCache!(vis::Visualizer,
-                                 cachevars::Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}};
-                                 sessionId::String="Session"  )::Nothing
+                                 cachevars::Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}},
+                                 rose_fgl,
+                                 params::Dict{String, Any}  )::Nothing
     #
+
+    sessionId="Session"
+    if isa(rose_fgl, FactorGraph) && (rose_fgl.sessionname != "" || rose_fgl.sessionname != "NA")
+        sessionId = rose_fgl.sessionname
+    elseif isa(rose_fgl, FactorGraph)
+        sessionId = rose_fgl[2]
+    end
+
 
     # draw all that the cache requires
     for (vsym, valpair) in cachevars
@@ -58,6 +67,35 @@ function visualizeVariableCache!(vis::Visualizer,
 end
 
 
+
+
+
+struct TagkTl
+	tagID::Symbol
+	kTl::Vector{Float64}
+end
+
+"""
+    drawTagsonPose!
+Draw tags on pose.
+""" #TODO: confirm xTc or cTx
+function drawTagsonPose!(botvis::Arena.BotVis2,
+                         tagsOnPoses::Dict{Symbol,Vector{TagkTl}};
+                         sessionId::String="Session" )
+    #
+	lmpoint = HyperSphere(Point(0.,0,0), 0.05)
+	blueMat = MeshPhongMaterial(color=RGBA(0, 0, 1, 0.5))
+
+	for x = keys(tagsOnPoses)
+	    for tag in tagsOnPoses[x]
+			setobject!(botvis.vis[:poses][x][tag.tagID], lmpoint, blueMat)
+			trans = Translation(tag.kTl)
+			settransform!(botvis.vis[:poses][x][tag.tagID], trans)
+	    end
+	end
+end
+
+# tagsOnPoses = Dict{Symbol, Vector{TagkTl}}()
 
 
 

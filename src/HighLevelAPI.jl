@@ -55,12 +55,14 @@ Example:
 function visualize(rose_fgl::Union{FactorGraph, Tuple{<:AbstractString, <:AbstractString}};
                    show::Bool=true,
                    meanmax=:max,
-                   plugins::Dict{Symbol, Function}=Dict{Symbol, Function}()  )::Nothing
+                   plugins::Vector{Function}=Function[]  )::Nothing
     #
     global loopvis
     global drawtransform
 
-    # setup Graff config
+    loopvis = true
+
+    # setup Graff config (iff a Graff visualization)
     robotId   = "Session"
     sessionId = "Bot"
     if !isa(rose_fgl, FactorGraph)
@@ -72,25 +74,37 @@ function visualize(rose_fgl::Union{FactorGraph, Tuple{<:AbstractString, <:Abstra
         config.sessionId = string(rose_fgl[2])
     end
 
-    loopvis = true
-
+    ## required variables
+    # the visualizer object itself
     vis = startDefaultVisualization(show=show)
+
+    # standard parameters dictionary
+    params = Dict{String,Any}()
 
     # (softtype, already-drawn, mapEst)
     cachevars = Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}}()
 
+    # Prepend default plugins to be executed
+    plugins = union([cacheVariablePointEst!; visualizeVariableCache!], plugins)
+
+    # run the visualization loop
     while loopvis
-
-        # TODO -- convert to list of plugin callbacks here, user can then register more plugins
-
-        ## consider collapsing into single visualizeSession plugin -- can then register multiple sessions
-          # rapid fetch of all point-value variable estimates (poses/landmarks/etc.)
-          cacheVariablePointEst!( rose_fgl, cachevars )
-          # vis or update all variable estimates
-          visualizeVariableCache!( vis, cachevars )
-
         # perform special interest such as point clouds or interpose lines
         # do plugins like pointclouds / images / reprojections / etc. here
+        for ff in plugins
+            try
+                ff(vis, cachevars, rose_fgl, params)
+            catch e
+                @error "Visualization plugin failure -- ff=$(string(ff)) errored: $e"
+                @error stacktrace()
+            end
+        end
+
+        ## consider collapsing into single visualizeSession plugin -- can then register multiple sessions
+          # # rapid fetch of all point-value variable estimates (poses/landmarks/etc.)
+          # cacheVariablePointEst!( rose_fgl, cachevars )
+          # # vis or update all variable estimates
+          # visualizeVariableCache!( vis, cachevars )
 
         # take a break and repeat
         sleep(1)

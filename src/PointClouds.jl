@@ -106,7 +106,7 @@ function cloudFromDepthImageClampZ(depths::Array{UInt16,2},
                                    maxrange::Float32=5f0,
                                    clampz = [0f0,1f0],
                                    colmap::Vector{T} = [0f0]  ) where T
-
+    #
 	cx = Float32(cm.cc[1])
 	cy = Float32(cm.cc[2])
 	fx = Float32(cm.fc[1])

@@ -9,8 +9,10 @@ using Colors: Color, Colorant, RGB, RGBA, alpha, hex
 
 
 
-function cacheVariablePointEst!(rose::Tuple{<:AbstractString, <:AbstractString},
-                                cachevarsl::Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}} )::Nothing
+function cacheVariablePointEst!(dummyvis,
+                                cachevarsl::Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}},
+                                rose::Tuple{<:AbstractString, <:AbstractString},
+                                params  )::Nothing
     #
     robotId   = string(rose[1])
     sessionId = string(rose[2])
@@ -21,6 +23,9 @@ function cacheVariablePointEst!(rose::Tuple{<:AbstractString, <:AbstractString},
 
         # TODO fix hack -- use softtype instead, see http://www.github.com/GearsAD/GraffSDK.jl#72
         typesym = :Point2
+        if nod.mapEst == nothing
+            continue
+        end
         if length(nod.mapEst) == 2
             nothing
         elseif length(nod.mapEst) == 3 && nod.label[1] == 'x'

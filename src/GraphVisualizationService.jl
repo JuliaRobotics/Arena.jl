@@ -1,8 +1,10 @@
 # visualization service calls (based on previous similar Collections and Director visualizations)
 
 
-function cacheVariablePointEst!(fgl::FactorGraph,
-                                cachevarsl::Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}};
+function cacheVariablePointEst!(dummyvis,
+                                cachevarsl::Dict{Symbol, Tuple{Symbol, Vector{Bool}, Vector{Float64}}},
+                                fgl::FactorGraph,
+                                params;
                                 meanmax=:max  )::Nothing
     #
 
