@@ -188,3 +188,21 @@ function drawPointCloudonPose!(botvis::BotVis2, x::Symbol, pointcloud::PointClou
     @warn "drawPointCloudonPose! decprecated, use visPointCloudOnPose! instead."
     visPointCloudOnPose!(botvis, x, pointcloud, xTc)
 end
+
+
+
+
+"""
+    $(SIGNATURES)
+
+Main plugin callback function
+"""
+function pointCloudPlugins(vis::MeshCat.Visualizer,
+                               params::Dict{Symbol, Any},
+                               rose_fgl)
+    #
+
+
+    
+    nothing
+end
