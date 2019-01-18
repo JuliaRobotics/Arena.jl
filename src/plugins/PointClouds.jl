@@ -178,7 +178,9 @@ Draw point cloud on pose.
 xTc -> pose to camera transform
 """ #TODO: confirm xTc or cTx
 function visPointCloudOnPose!(vis::Visualizer, x::Symbol, pointcloud::PointCloud, sessionId, xTc::SE3 = SE3([0,0,0],I))::Nothing
-    setobject!(vis[Symbol(sessionId)][:poses][x][:pc], pointcloud)
+	# TODO: Cleanup and make parameter.
+	material = PointsMaterial(color=RGBA(0,1.0,1.0,0.5),size=0.02) # Used to set size of particles
+	setobject!(vis[Symbol(sessionId)][:poses][x][:pc], pointcloud, material)
 	trans = Translation(xTc.t[1], xTc.t[2], xTc.t[3])∘LinearMap(Quat(xTc.R.R))
 	settransform!(vis[Symbol(sessionId)][:poses][x][:pc], trans)
 	return nothing
@@ -232,13 +234,13 @@ function pointCloudPlugins(vis::MeshCat.Visualizer,
 
 				sensorElem = getRawData(getNode(varLabel), dataKeys["Sensor"])
 				sensorElem = JSON.parse(sensorElem)
-				kQi = map(a -> Float64(a), sensor["kQi"]) #Vector{Float64}
+				kQi = map(a -> Float64(a), sensorElem["kQi"]) #Vector{Float64}
 				kTc = (SE3([0,0,0], Quaternion(kQi)))
 				trans = Translation([0,0,0])∘LinearMap(Quat(kTc.R.R))
 
-				dCam = Arena.CameraModel(640, 480, 387.205, [322.042, 238.544])
-                pointcloud = cloudFromDepthImageClampZ(depthlog[uskey], dcam, trans, maxrange=3f0, clampz = [-1f0,1f0], colmap=repeatedColorMap)
-                Arena.visPointCloudOnPose!(vis, x, pointcloud, params[:sessionId])
+				dcam = Arena.CameraModel(640, 480, 387.205, [322.042, 238.544])
+                pointcloud = cloudFromDepthImageClampZ(depth, dcam, trans, maxrange=3f0, clampz = [-1f0,1f0]) # , colmap=repeatedColorMap
+                Arena.visPointCloudOnPose!(vis, Symbol(varLabel), pointcloud, params[:sessionId])
 			else
 				@info " --- Skipping because: Depth exists? $(haskey(dataKeys, "Depth") ? "TRUE" : "FALSE"); Sensor exists? $(haskey(dataKeys, "Sensor") ? "TRUE" : "FALSE")"
 			end
