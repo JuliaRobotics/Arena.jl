@@ -1,18 +1,5 @@
 # image utils
 
-# """
-# Convert image_t (some types of it) to RGB{N0f8} matrix for viewing.
-# Currently only supports:
-# * RGB (pixelformat 859981650)
-# """
-# function image_tToRgb(img::image_t)::Array{RGB{N0f8}, 2}
-#   if img.pixelformat != 859981650
-#     error("This function only can convert image_t's with pixel format RGB (859981650)")
-#   end
-#
-#   return rgbUint8ToRgb(Int(img.width), Int(img.height), img.data)
-# end
-
 """
 Convert a Vector{UInt8} to an image of RGB Vector{N0f8}.
 """
@@ -33,7 +20,7 @@ Converts an RGB image to a JPEG image, returns buffer of UInt8 data.
 """
 function rgbToJpeg(rgb::Array{RGB{N0f8}, 2})::Vector{UInt8}
   io = IOBuffer()
-  save(Stream(format"JPEG",io), imgForm)
+  save(Stream(format"JPEG",io), rgb)
   bytes = take!(io)
   return bytes
 end
@@ -43,7 +30,7 @@ Converts an RGB image to a PNG image, returns buffer of UInt8 data.
 """
 function rgbToPng(rgb::Array{RGB{N0f8}, 2})::Vector{UInt8}
   io = IOBuffer()
-  save(Stream(format"PNG",io), imgForm)
+  save(Stream(format"PNG",io), rgb)
   bytes = take!(io)
   return bytes
 end
