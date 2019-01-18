@@ -177,14 +177,82 @@ end
 Draw point cloud on pose.
 xTc -> pose to camera transform
 """ #TODO: confirm xTc or cTx
-function visPointCloudOnPose!(botvis::BotVis2, x::Symbol, pointcloud::PointCloud, xTc::SE3 = SE3([0,0,0],I))::Nothing
-    setobject!(botvis.vis[:poses][x][:pc], pointcloud)
+function visPointCloudOnPose!(vis::Visualizer, x::Symbol, pointcloud::PointCloud, sessionId, xTc::SE3 = SE3([0,0,0],I))::Nothing
+	# TODO: Cleanup and make parameter.
+	material = PointsMaterial(color=RGBA(0,1.0,1.0,0.5),size=0.02) # Used to set size of particles
+	setobject!(vis[Symbol(sessionId)][:poses][x][:pc], pointcloud, material)
 	trans = Translation(xTc.t[1], xTc.t[2], xTc.t[3])∘LinearMap(Quat(xTc.R.R))
-	settransform!(botvis.vis[:poses][x][:pc], trans)
+	settransform!(vis[Symbol(sessionId)][:poses][x][:pc], trans)
 	return nothing
+end
+function visPointCloudOnPose!(botvis::BotVis2, x::Symbol, pointcloud::PointCloud, sessionId, xTc::SE3 = SE3([0,0,0],I))::Nothing
+   visPointCloudOnPose!(botvis.vis, x, pointcloud, sessionId, xTc)
 end
 
 function drawPointCloudonPose!(botvis::BotVis2, x::Symbol, pointcloud::PointCloud, xTc::SE3 = SE3([0,0,0],I))::Nothing
     @warn "drawPointCloudonPose! decprecated, use visPointCloudOnPose! instead."
     visPointCloudOnPose!(botvis, x, pointcloud, xTc)
+end
+
+
+
+
+"""
+    $(SIGNATURES)
+
+Main plugin callback function
+"""
+function pointCloudPlugins(vis::MeshCat.Visualizer,
+                               params::Dict{Symbol, Any},
+                               rose_fgl)
+    # Assume static list for now...
+	if !haskey(params, :dataEntries)
+		@info "Getting data entries to cache..."
+		entries = getDataEntriesForSession()
+		params[:dataEntries] = entries
+	end
+	if !haskey(params, :depthsDrawn)
+		params[:depthsDrawn] = Dict{String, Any}()
+	end
+	if !haskey(params, :robotConfig)
+		params[:robotConfig] = getRobotConfig()
+	end
+
+	@show allVarLabels = collect(keys(params[:cachevars]))
+
+	for varLabel in string.(allVarLabels)
+		@info "Rendering potential data from $varLabel..."
+		if haskey(params[:dataEntries], varLabel)
+			dataSet = params[:dataEntries][varLabel]
+			dataKeys = Dict(map(i -> i.id, dataSet) .=> dataSet)
+			if haskey(dataKeys, "Depth") && haskey(dataKeys, "Sensor") #kQi
+				# TODO: Check formats and dimensions and everything that is going to blow up here...
+				# literally... everything.
+				depthElem = getRawData(getNode(varLabel), dataKeys["Depth"])
+				depth = collect(reinterpret(UInt16, base64decode(depthElem)))
+				depth = reshape(depth, (640, 480))
+
+				sensorElem = getRawData(getNode(varLabel), dataKeys["Sensor"])
+				sensorElem = JSON.parse(sensorElem)
+				kQi = map(a -> Float64(a), sensorElem["kQi"]) #Vector{Float64}
+				kTc = (SE3([0,0,0], Quaternion(kQi)))
+				trans = Translation([0,0,0])∘LinearMap(Quat(kTc.R.R))
+
+				dcam = Arena.CameraModel(640, 480, 387.205, [322.042, 238.544])
+                pointcloud = cloudFromDepthImageClampZ(depth, dcam, trans, maxrange=3f0, clampz = [-1f0,1f0]) # , colmap=repeatedColorMap
+                Arena.visPointCloudOnPose!(vis, Symbol(varLabel), pointcloud, params[:sessionId])
+			else
+				@info " --- Skipping because: Depth exists? $(haskey(dataKeys, "Depth") ? "TRUE" : "FALSE"); Sensor exists? $(haskey(dataKeys, "Sensor") ? "TRUE" : "FALSE")"
+			end
+		else
+			@info " --- No data entries for this label..."
+		end
+	end
+
+	# ID of depth data ~ Depth
+	# Format of depth data - hopefully UInt16
+	# Dimensions - width x height
+	# Camera transform - intrinsic = camModel
+	# Camera transform - extrinsic = kQi
+    return nothing
 end
