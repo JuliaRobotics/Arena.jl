@@ -101,7 +101,6 @@ include("ImageUtils.jl")
 include("AnimationUtils.jl")
 include("VisualizationUtils.jl")
 include("VisualizePosesPoints.jl")
-include("PointClouds.jl")
 include("ModelVisualizationUtils.jl")
 include("deprecated/Deprecated.jl")
 
@@ -140,6 +139,7 @@ function __init__()
 # load the internal plugins that may or may not depend on the @requires above
 include("plugins/VisualizationDefault.jl")
 include("plugins/ReprojectBearingRange.jl")
+include("plugins/PointClouds.jl")
 
 
 
