@@ -4,6 +4,7 @@ module Arena
 # see https://github.com/JuliaIO/ImageMagick.jl/issues/142
 using ImageMagick
 using Caesar, ImageView, Images, MeshIO, MeshCat
+using RoME
 
 using Rotations, CoordinateTransformations
 using TransformUtils
