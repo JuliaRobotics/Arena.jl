@@ -121,9 +121,12 @@ function visualize(rose_fgl::Union{FactorGraph, Tuple{<:AbstractString, <:Abstra
         for callback in plugins
             try
                 callback(vis, params, rose_fgl)
-            catch e
-                @error "Visualization plugin failure -- callback=$(string(callback)) errored: $e"
-                @error stacktrace()
+            catch ex
+                @error "Visualization plugin failure -- callback=$(string(callback)) errored: $ex"
+                io = IOBuffer()
+                showerror(io, ex, catch_backtrace())
+                err = String(take!(io))
+                @error "Error! $err"
             end
         end
 

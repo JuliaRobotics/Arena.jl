@@ -14,6 +14,7 @@ using DocStringExtensions, ProgressMeter
 using Requires
 using FileIO
 using JSON
+using Base64
 
 const CTs = CoordinateTransformations
 const TUs = TransformUtils
@@ -138,8 +139,10 @@ function __init__()
 
 # load the internal plugins that may or may not depend on the @requires above
 include("plugins/VisualizationDefault.jl")
+include("plugins/GetRobotConfiguration.jl")
 include("plugins/ReprojectBearingRange.jl")
 include("plugins/PointClouds.jl")
+
 
 
 
