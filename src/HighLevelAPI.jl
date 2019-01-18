@@ -52,10 +52,8 @@ function extractRobotSession!(rose_fgl::Union{FactorGraph, Tuple{<:AbstractStrin
         end
     else
         # setup Graff config (iff a Graff visualization)
-        config = loadGraffConfig()
-        if config == nothing
-            error("Graff config is not set, please call setGraffConfig with a valid configuration.")
-        end
+        getGraffConfig() == nothing && error("GraffSDK is not configured, please call loadGraffConfig() to set up Graff.")
+        config = getGraffConfig()
         params[:robotId] = Symbol(rose_fgl[1])
         params[:sessionId] = Symbol(rose_fgl[2])
         config.robotId = string(params[:robotId])
