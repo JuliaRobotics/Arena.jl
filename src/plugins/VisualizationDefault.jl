@@ -50,6 +50,8 @@ function visualizeVariableCache!(vis::Visualizer,
         sessionId = rose_fgl.sessionname
     elseif isa(rose_fgl, FactorGraph)
         sessionId = rose_fgl[2]
+    else
+        sessionId = params[:sessionId]
     end
 
 
