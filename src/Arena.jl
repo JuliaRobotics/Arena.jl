@@ -82,6 +82,7 @@ export
 
   # colour gradients
   # re-exports
+  cgrad,
   clibraries,
   cgradients
 
