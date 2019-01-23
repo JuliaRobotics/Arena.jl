@@ -105,7 +105,7 @@ function cloudFromDepthImageClampZ(depths::Array{UInt16,2},
                                    skip::Int = 2,
                                    maxrange::Float32=5f0,
                                    clampz = [0f0,1f0],
-                                   colmap::Vector{T} = [0f0]  ) where T
+                                   colmap::ColorGradient = ColorGradient([RGBA(0,1,0,1)], [1.0]))
     #
 	cx = Float32(cm.cc[1])
 	cy = Float32(cm.cc[2])
@@ -123,11 +123,8 @@ function cloudFromDepthImageClampZ(depths::Array{UInt16,2},
             p = trans(Point3f0(z,x,y))
 			if clampz[1] <= p[3] <= clampz[2]
             	push!(cloud, p) #NOTE rotated to Forward Starboard Down, TODO: maybe leave in camera frame?
-				if length(colmap) == 2560
-					push!(cloudCol, colmap[round(Int,((p[3]-clampz[1])/(clampz[2]-clampz[1]))*2559f0/4f0)+1])
-				else
-            		push!(cloudCol, RGB{Float32}(0.,1.,0.))#colmap[round(Int,(z/maxrange)*2559f0)+1]
-				end
+				cmlength = length(colmap.colors)
+				push!(cloudCol, colmap.colors[round(Int,((p[3]-clampz[1])/(clampz[2]-clampz[1]))*Float32(cmlength-1))+1])
 			end
         end
     end
@@ -179,7 +176,7 @@ xTc -> pose to camera transform
 """ #TODO: confirm xTc or cTx
 function visPointCloudOnPose!(vis::Visualizer, x::Symbol, pointcloud::PointCloud, sessionId, xTc::SE3 = SE3([0,0,0],I))::Nothing
 	# TODO: Cleanup and make parameter.
-	material = PointsMaterial(color=RGBA(0,1.0,1.0,0.5),size=0.02) # Used to set size of particles
+	material = PointsMaterial(size=0.02) # Used to set size of particles
 	setobject!(vis[Symbol(sessionId)][:poses][x][:pc], pointcloud, material)
 	trans = Translation(xTc.t[1], xTc.t[2], xTc.t[3])∘LinearMap(Quat(xTc.R.R))
 	settransform!(vis[Symbol(sessionId)][:poses][x][:pc], trans)

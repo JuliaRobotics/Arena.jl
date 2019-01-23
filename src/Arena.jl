@@ -10,11 +10,13 @@ using TransformUtils
 using Graphs, NLsolve
 using GeometryTypes, ColorTypes
 using DocStringExtensions, ProgressMeter
+using PlotUtils
 # using CaesarLCMTypes
 using Requires
 using FileIO
 using JSON
 using Base64
+
 
 const CTs = CoordinateTransformations
 const TUs = TransformUtils
@@ -76,7 +78,12 @@ export
   # point clouds
   visPointCloudOnPose!,
   drawPointCloudonPose!,
-  cloudFromDepthImage
+  cloudFromDepthImage,
+
+  # colour gradients
+  # re-exports
+  clibraries,
+  cgradients
 
 
 const NothingUnion{T} = Union{Nothing, T}
