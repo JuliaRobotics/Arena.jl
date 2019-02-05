@@ -120,7 +120,7 @@ function visualize!(vis::Visualizer, bfg::BasicFactorGraphPose)::Nothing
 		nodef = getfield(Arena, typesym)
 
 		#NOTE make sure storage order and softtypes are always the same
-		@show nodestruct = nodef(xmx...)
+		nodestruct = nodef(xmx...)
 
 		# TODO Can we alwyas assume labels are correct? If so, this will work nicely
 		# nodelabels = Caesar.getData(vert).softtype.labels
@@ -157,7 +157,7 @@ struct BasicGraffPose <: AbsractVarsVis
 	robotId::String
 	sessionId::String
 	config::GraffConfig
-	nodes::Dict{Symbol, AbstractPointPose} #poseId, Softtype
+	nodes::Dict{Symbol, AbstractPointPose} #poseId, AbstractPointPose
 	meanmax::Symbol
 	poseScale::Float64
 	zoffset::Float64
@@ -169,7 +169,79 @@ BasicGraffPose(config::GraffConfig) =
 				   :max, 0.2, 0.0, 0.1)
 
 
+function visualize!(vis::Visualizer, bfg::BasicGraffPose)::Nothing
+	#TODO maybe improve this function to lower memmory allocations
 
+
+	# get the Graff factor graph object
+	robotId = bfg.robotId
+	sessionId = bfg.sessionId
+
+	nodes = GraffSDK.getNodes(robotId, sessionId).nodes
+
+	for nod in nodes
+
+
+		# TODO fix hack -- use softtype instead, see http://www.github.com/GearsAD/GraffSDK.jl#72
+		if nod.mapEst == nothing
+		    continue
+		end
+		if length(nod.mapEst) == 2
+		    typesym = :Point2
+		elseif length(nod.mapEst) == 3 && nod.label[1] == 'x'
+		    typesym = :Pose2
+		elseif length(nod.mapEst) == 3 && nod.label[1] == 'l'
+		    typesym = :Point3
+		elseif length(nod.mapEst) == 6 && nod.label[1] == 'x'
+		    typesym = :Pose3
+		else
+		    typesym = :error
+		    error("Unknown estimate dimension and naming")
+		end
+
+		nodef = getfield(Arena, typesym)
+		#NOTE make sure storage order and softtypes are always the same
+		nodestruct = nodef(nod.mapEst...)
+
+		# TODO Can we alwyas assume labels are correct? If so, this will work nicely
+		# nodelabels = Caesar.getData(vert).softtype.labels
+		# if length(nodelabels) > 0
+		# 	groupsym = Symbol(nodelabels[1])
+		# else
+		# 	groupsym = :group
+		# end
+
+		vsym = Symbol(nod.label)
+
+		if string(vsym)[1] == 'l'
+			groupsym = :landmarks
+		elseif string(vsym)[1] == 'x'
+			groupsym = :poses
+		else
+			@warn "Unknown symbol encountered $vsym"
+			groupsym = :unknown
+		end
+
+		isnewnode = !haskey(bfg.nodes, vsym)
+		if isnewnode
+			push!(bfg.nodes, vsym=>nodestruct)
+		else
+			bfg.nodes[vsym] = nodestruct
+		end
+
+		visNode!(vis[robotId][sessionId][groupsym][vsym], nodestruct, isnewnode)
+
+	end
+
+	return nothing
+end
+
+
+"""
+   $(SIGNATURES)
+High level interface to launch webserver process that draws a factor_graph_vis_type <: AbsractVarsVis, using Three.js and MeshCat.jl.
+User factor_graph_vis_type should provide a visualize!(vis::Visualizer, factor_graph_vis_variables::T<:AbsractVarsVis ) function.
+"""
 function visualize(visdatasets::Vector{AbsractVarsVis};
                    show::Bool=true)::Nothing
     #
