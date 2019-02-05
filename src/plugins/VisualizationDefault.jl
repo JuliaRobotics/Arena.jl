@@ -22,7 +22,7 @@ function cacheVariablePointEst!(dummyvis,
         xmx = meanmax == :max ? getKDEMax(X) : getKDEMean(X)
 
         # get the variable type
-        typesym = getData(vert).softtype |> typeof |> Symbol
+        typesym = Caesar.getData(vert).softtype |> typeof |> Symbol
 
         # cache variable type and estimated value (slightly memory intensive)
         cachevars[vsym] = (typesym, [false;], xmx)
