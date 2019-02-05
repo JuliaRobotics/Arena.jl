@@ -1,5 +1,6 @@
 #FIXME move graff functions to under requires
 using GraffSDK
+using JSON2
 
 abstract type AbsractVarsVis end
 
@@ -65,6 +66,18 @@ function visNode!(vis::Visualizer,
 
 end
 
+
+"""
+    $(SIGNATURES)
+Draw point cloud on pose.
+xTc -> pose to camera transform, # Use material to set size of particles or other propeties
+""" #TODO: confirm xTc or cTx
+function visPointCloudOnPose!(vis::Visualizer, pointcloud::PointCloud; xTc::SE3 = SE3([0,0,0],I), material = PointsMaterial(size=0.02) )::Nothing
+	setobject!(vis, pointcloud, material)
+	trans = Translation(xTc.t[1], xTc.t[2], xTc.t[3])∘LinearMap(Quat(xTc.R.R))
+	settransform!(vis, trans)
+	return nothing
+end
 
 
 struct BasicFactorGraphPose <: AbsractVarsVis
@@ -230,6 +243,121 @@ function visualize!(vis::Visualizer, bfg::BasicGraffPose)::Nothing
 		end
 
 		visNode!(vis[robotId][sessionId][groupsym][vsym], nodestruct, isnewnode)
+
+	end
+
+	return nothing
+end
+
+
+
+struct PointCloudGraffPose <: AbsractVarsVis
+	robotId::String
+	sessionId::String
+	config::GraffConfig
+	nodes::Dict{Symbol, AbstractPointPose} #poseId, AbstractPointPose
+	meanmax::Symbol
+	poseScale::Float64
+	zoffset::Float64
+	pointScale::Float64
+	pclouds::Dict{Symbol, Bool}
+	dcam::CameraModel
+	colmap::ColorGradient
+end
+
+PointCloudGraffPose(config::GraffConfig, dcam::CameraModel) =
+	PointCloudGraffPose(config.robotId, config.sessionId, config, Dict{Symbol,AbstractPointPose}(),
+				   :max, 0.2, 0.0, 0.1,
+				   Dict{Symbol,Bool}(), dcam, cgrad(:bgy,:colorcet))
+
+
+function visualize!(vis::Visualizer, bfg::PointCloudGraffPose)::Nothing
+	#TODO maybe improve this function to lower memmory allocations
+
+
+	# get the Graff factor graph object
+	robotId = bfg.robotId
+	sessionId = bfg.sessionId
+
+	nodes = GraffSDK.getNodes(robotId, sessionId).nodes
+
+	for nod in nodes
+
+		# TODO fix hack -- use softtype instead, see http://www.github.com/GearsAD/GraffSDK.jl#72
+		if nod.mapEst == nothing
+		    continue
+		end
+		if length(nod.mapEst) == 2
+		    typesym = :Point2
+		elseif length(nod.mapEst) == 3 && nod.label[1] == 'x'
+		    typesym = :Pose2
+		elseif length(nod.mapEst) == 3 && nod.label[1] == 'l'
+		    typesym = :Point3
+		elseif length(nod.mapEst) == 6 && nod.label[1] == 'x'
+		    typesym = :Pose3
+		else
+		    typesym = :error
+		    error("Unknown estimate dimension and naming")
+		end
+
+		nodef = getfield(Arena, typesym)
+		#NOTE make sure storage order and softtypes are always the same
+		nodestruct = nodef(nod.mapEst...)
+
+		# TODO Can we alwyas assume labels are correct? If so, this will work nicely
+		# nodelabels = Caesar.getData(vert).softtype.labels
+		# if length(nodelabels) > 0
+		# 	groupsym = Symbol(nodelabels[1])
+		# else
+		# 	groupsym = :group
+		# end
+
+		vsym = Symbol(nod.label)
+
+		if string(vsym)[1] == 'l'
+			groupsym = :landmarks
+		elseif string(vsym)[1] == 'x'
+			groupsym = :poses
+		else
+			@warn "Unknown symbol encountered $vsym"
+			groupsym = :unknown
+		end
+
+		isnewnode = !haskey(bfg.nodes, vsym)
+		if isnewnode
+			push!(bfg.nodes, vsym=>nodestruct)
+		else
+			bfg.nodes[vsym] = nodestruct
+		end
+
+		visNode!(vis[robotId][sessionId][groupsym][vsym], nodestruct, isnewnode)
+
+ 		#only draw point clouds on poses?
+		if groupsym == :poses && !haskey(bfg.pclouds, vsym) #TODO gee dalk op om nuwe pc data te kry na 'n ruk?
+
+			#FIXME hack until GraffSDK is updated to return local elelement correctly
+			#something like this might work:
+			# elem = getRawData(nodeId, sessionId, nod.label, dataKeys["rawdepth"])
+			elem =  Main.getLocalElement(bfg.config, nod.label, "rawdepth")
+			if elem == nothing
+				continue
+			end
+
+			depthImage = JSON2.read(elem.data)
+
+			kTc = (SE3([0,0,0], Quaternion(Float64.(depthImage.kQi[1:4]))))
+			trans = Translation([0,0,0])∘LinearMap(Quat(kTc.R.R))
+
+			w = depthImage.image.width
+			h = depthImage.image.height
+
+			depthim = reshape(reinterpret(UInt16,UInt8.(depthImage.image.data)), (w, h))'[:,:]
+
+			pointcloud = cloudFromDepthImageClampZ(depthim, bfg.dcam, trans, maxrange=3f0, clampz = [-0.5f0,0.5f0], colmap=bfg.colmap)
+
+			visPointCloudOnPose!(vis[robotId][sessionId][groupsym][vsym][:pc], pointcloud)
+			push!(bfg.pclouds, vsym=>true)
+		end
 
 	end
 
