@@ -398,6 +398,127 @@ end
 
 
 
+#local fg and local bd (but through graff)
+struct PCloudFactorGraphPose <: AbsractVarsVis
+	robotId::String
+	sessionId::String
+	config::GraffConfig
+	fg::FactorGraph
+	nodes::Dict{Symbol, AbstractPointPose} #poseId, Softtype
+	meanmax::Symbol
+	poseScale::Float64
+	zoffset::Float64
+	pointScale::Float64
+	pclouds::Dict{Symbol, Bool}
+	dcam::CameraModel
+	colmap::ColorGradient
+end
+
+PCloudFactorGraphPose(config::GraffConfig, fg::FactorGraph, dcam::CameraModel) =
+	PCloudFactorGraphPose(config.robotId, config.sessionId, config, fg, Dict{Symbol,AbstractPointPose}(),
+					:max, 0.2, 0.0, 0.1,
+					Dict{Symbol,Bool}(), dcam, cgrad(:bgy,:colorcet))
+
+
+function visualize!(vis::Visualizer, bfg::PCloudFactorGraphPose)::Nothing
+	#TODO maybe improve this function to lower memmory allocations
+
+
+	# get the local factor graph object
+	# TODO add getlocalfg function or local fg object to the struct
+	# tested defined in main
+	# fgl = Main.getlocalfg(bfg.sessionId)
+	fgl = bfg.fg
+
+	robotId = bfg.robotId
+	sessionId = bfg.sessionId
+
+
+	# get all variables
+    xx, ll = IIF.ls(fgl)
+    vars = union(xx, ll)
+
+    # update the variable point-estimate cache
+    for vsym in vars
+
+        # get vertex and estimate from the factor graph object
+        vert = getVert(fgl, vsym)
+        X = getKDE(vert)
+
+        xmx = bfg.meanmax == :max ? getKDEMax(X) : getKDEMean(X)
+
+        # get the variable type
+        typesym = Caesar.getData(vert).softtype |> typeof |> Symbol
+
+		nodef = getfield(Arena, typesym)
+
+		#NOTE make sure storage order and softtypes are always the same
+		nodestruct = nodef(xmx...)
+
+		# TODO Can we alwyas assume labels are correct? If so, this will work nicely
+		# nodelabels = Caesar.getData(vert).softtype.labels
+		# if length(nodelabels) > 0
+		# 	groupsym = Symbol(nodelabels[1])
+		# else
+		# 	groupsym = :group
+		# end
+
+		if string(vsym)[1] == 'l'
+			groupsym = :landmarks
+		elseif string(vsym)[1] == 'x'
+			groupsym = :poses
+		else
+			@warn "Unknown symbol encountered $vsym"
+			groupsym = :unknown
+		end
+
+		isnewnode = !haskey(bfg.nodes, vsym)
+		if isnewnode
+			push!(bfg.nodes, vsym=>nodestruct)
+		else
+			bfg.nodes[vsym] = nodestruct
+		end
+
+		visNode!(vis[robotId][sessionId][groupsym][vsym], nodestruct, isnewnode)
+
+		#only draw point clouds on poses?
+		if groupsym == :poses && !haskey(bfg.pclouds, vsym) #TODO gee dalk op om nuwe pc data te kry na 'n ruk?
+
+		    #FIXME hack until GraffSDK is updated to return local elelement correctly
+		    #something like this might work:
+		    # elem = getRawData(nodeId, sessionId, nod.label, dataKeys["rawdepth"])
+		    elem =  Main.getLocalElement(bfg.config, string(vsym), "rawdepth")
+		    if elem == nothing
+		        continue
+		    end
+
+		    depthImage = JSON2.read(elem.data)
+
+		    kTc = (SE3([0,0,0], Quaternion(Float64.(depthImage.kQi[1:4]))))
+		    trans = Translation([0,0,0])∘LinearMap(Quat(kTc.R.R))
+
+		    w = depthImage.image.width
+		    h = depthImage.image.height
+
+		    depthim = reshape(reinterpret(UInt16,UInt8.(depthImage.image.data)), (w, h))'[:,:]
+
+		    pointcloud = cloudFromDepthImageClampZ(depthim, bfg.dcam, trans, maxrange=3f0, clampz = [-0.5f0,0.5f0], colmap=bfg.colmap)
+
+		    visPointCloudOnPose!(vis[robotId][sessionId][groupsym][vsym][:pc], pointcloud)
+		    push!(bfg.pclouds, vsym=>true)
+		end
+
+    end
+
+    return nothing
+end
+
+
+
+
+
+
+
 """
     $(SIGNATURES)
 Initialize empty visualizer
