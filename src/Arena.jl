@@ -3,6 +3,7 @@ module Arena
 # due to issue with ImageMagick and Pkg importing, the order is very sensitive here!
 # see https://github.com/JuliaIO/ImageMagick.jl/issues/142
 using ImageMagick
+using PlotUtils
 using Caesar, ImageView, Images, MeshIO, MeshCat
 
 using Rotations, CoordinateTransformations
@@ -15,6 +16,7 @@ using Requires
 using FileIO
 using JSON
 using Base64
+
 
 const CTs = CoordinateTransformations
 const TUs = TransformUtils
@@ -76,7 +78,13 @@ export
   # point clouds
   visPointCloudOnPose!,
   drawPointCloudonPose!,
-  cloudFromDepthImage
+  cloudFromDepthImage,
+
+  # colour gradients
+  # re-exports
+  cgrad,
+  clibraries,
+  cgradients
 
 
 const NothingUnion{T} = Union{Nothing, T}
