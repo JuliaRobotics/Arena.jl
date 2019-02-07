@@ -2,12 +2,12 @@
 using GraffSDK
 using JSON2
 
-abstract type AbsractVarsVis end
+abstract type AbstractVarsVis end
 
 abstract type AbstractPointPose end
 
-#NOTE names should match soft type names Pose2 and Point2 but may cause conflict with Caesar
-mutable struct Pose2{T<:AbstractFloat} <: AbstractPointPose
+#NOTE names should match soft type names with Arena added to the front to avoid conflict, eg. ArenaPose2 and ArenaPoint2
+mutable struct ArenaPose2{T<:AbstractFloat} <: AbstractPointPose
 	x::T
 	y::T
 	θ::T
@@ -25,7 +25,7 @@ function visPose!(vis::Visualizer,
 end
 
 
-mutable struct Point2{T<:AbstractFloat} <: AbstractPointPose
+mutable struct ArenaPoint2{T<:AbstractFloat} <: AbstractPointPose
 	x::T
 	y::T
 end
@@ -46,7 +46,7 @@ function visPoint!(vis::Visualizer,
 end
 
 function visNode!(vis::Visualizer,
-	              pose::Pose2,
+	              pose::ArenaPose2,
 				  updateonly::Bool=false;
 	              scale::Float64=0.2, #TODO move keyword params to params dict or named tuple?
 	              zoffset::Float64=0.0)::Nothing
@@ -56,7 +56,7 @@ function visNode!(vis::Visualizer,
 end
 
 function visNode!(vis::Visualizer,
-            	  point::Point2,
+            	  point::ArenaPoint2,
 				  updateonly::Bool=false;
                   scale::Float64=0.1,
                   zoffset::Float64=0.0)::Nothing
@@ -80,7 +80,7 @@ function visPointCloudOnPose!(vis::Visualizer, pointcloud::PointCloud; xTc::SE3 
 end
 
 
-struct BasicFactorGraphPose <: AbsractVarsVis
+struct BasicFactorGraphPose <: AbstractVarsVis
 	robotId::String
 	sessionId::String
 	fg::FactorGraph
@@ -128,7 +128,8 @@ function visualize!(vis::Visualizer, bfg::BasicFactorGraphPose)::Nothing
         xmx = bfg.meanmax == :max ? getKDEMax(X) : getKDEMean(X)
 
         # get the variable type
-        typesym = Caesar.getData(vert).softtype |> typeof |> Symbol
+        typestr = Caesar.getData(vert).softtype |> typeof
+		typesym = Symbol("Arena$typestr")
 
 		nodef = getfield(Arena, typesym)
 
@@ -166,7 +167,7 @@ function visualize!(vis::Visualizer, bfg::BasicFactorGraphPose)::Nothing
     return nothing
 end
 
-struct BasicGraffPose <: AbsractVarsVis
+struct BasicGraffPose <: AbstractVarsVis
 	robotId::String
 	sessionId::String
 	config::GraffConfig
@@ -200,13 +201,13 @@ function visualize!(vis::Visualizer, bfg::BasicGraffPose)::Nothing
 		    continue
 		end
 		if length(nod.mapEst) == 2
-		    typesym = :Point2
+		    typesym = :ArenaPoint2
 		elseif length(nod.mapEst) == 3 && nod.label[1] == 'x'
-		    typesym = :Pose2
+		    typesym = :ArenaPose2
 		elseif length(nod.mapEst) == 3 && nod.label[1] == 'l'
-		    typesym = :Point3
+		    typesym = :ArenaPoint3
 		elseif length(nod.mapEst) == 6 && nod.label[1] == 'x'
-		    typesym = :Pose3
+		    typesym = :ArenaPose3
 		else
 		    typesym = :error
 		    error("Unknown estimate dimension and naming")
@@ -251,7 +252,7 @@ end
 
 
 
-struct PointCloudGraffPose <: AbsractVarsVis
+struct PointCloudGraffPose <: AbstractVarsVis
 	robotId::String
 	sessionId::String
 	config::GraffConfig
@@ -288,13 +289,13 @@ function visualize!(vis::Visualizer, bfg::PointCloudGraffPose)::Nothing
 		    continue
 		end
 		if length(nod.mapEst) == 2
-		    typesym = :Point2
+		    typesym = :ArenaPoint2
 		elseif length(nod.mapEst) == 3 && nod.label[1] == 'x'
-		    typesym = :Pose2
+		    typesym = :ArenaPose2
 		elseif length(nod.mapEst) == 3 && nod.label[1] == 'l'
-		    typesym = :Point3
+		    typesym = :ArenaPoint3
 		elseif length(nod.mapEst) == 6 && nod.label[1] == 'x'
-		    typesym = :Pose3
+		    typesym = :ArenaPose3
 		else
 		    typesym = :error
 		    error("Unknown estimate dimension and naming")
@@ -367,10 +368,10 @@ end
 
 """
    $(SIGNATURES)
-High level interface to launch webserver process that draws a factor_graph_vis_type <: AbsractVarsVis, using Three.js and MeshCat.jl.
-User factor_graph_vis_type should provide a visualize!(vis::Visualizer, factor_graph_vis_variables::T<:AbsractVarsVis ) function.
+High level interface to launch webserver process that draws a factor_graph_vis_type <: AbstractVarsVis, using Three.js and MeshCat.jl.
+User factor_graph_vis_type should provide a visualize!(vis::Visualizer, factor_graph_vis_variables::T<:AbstractVarsVis ) function.
 """
-function visualize(visdatasets::Vector{AbsractVarsVis};
+function visualize(visdatasets::Vector{AbstractVarsVis};
                    show::Bool=true)::Nothing
     #
     global loopvis
@@ -399,7 +400,7 @@ end
 
 
 #local fg and local bd (but through graff)
-struct PCloudFactorGraphPose <: AbsractVarsVis
+struct PCloudFactorGraphPose <: AbstractVarsVis
 	robotId::String
 	sessionId::String
 	config::GraffConfig
@@ -448,7 +449,8 @@ function visualize!(vis::Visualizer, bfg::PCloudFactorGraphPose)::Nothing
         xmx = bfg.meanmax == :max ? getKDEMax(X) : getKDEMean(X)
 
         # get the variable type
-        typesym = Caesar.getData(vert).softtype |> typeof |> Symbol
+		typestr = Caesar.getData(vert).softtype |> typeof
+		typesym = Symbol("Arena$typestr")
 
 		nodef = getfield(Arena, typesym)
 
@@ -564,7 +566,7 @@ function drawPoses2!(botvis::BotVis2,
         if !haskey(botvis.cachevars, x)
             triad = Triad(triadLength)
             setobject!(botvis.vis[Symbol(sessionId)][:poses][x], triad)
-            botvis.cachevars[x] = (:Pose2, [true;], xmx)
+            botvis.cachevars[x] = (:ArenaPose2, [true;], xmx)
         else
             botvis.cachevars[x][3][:] = xmx
         end
@@ -590,7 +592,7 @@ function drawLandmarks2!(botvis::BotVis2,
         trans = Translation(xmx[1:2]..., 0.0)
         if !haskey(botvis.cachevars, x)
             setobject!(botvis.vis[Symbol(sessionId)][:landmarks][x], lmpoint, greenMat)
-            botvis.cachevars[x] = (:Point2, [true;], [xmx[1]; xmx[2]; 0.0 ] )
+            botvis.cachevars[x] = (:ArenaPoint2, [true;], [xmx[1]; xmx[2]; 0.0 ] )
         else
             botvis.cachevars[x][3][1:2] = xmx[1:2]
         end
