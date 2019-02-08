@@ -2,6 +2,11 @@
 using GraffSDK
 using JSON2
 
+function setGlobalDrawTransform!(vis::Visualizer;trans=Translation(0.0,0.0,0.0), quat::Rotations.Quat=Quat(1.0,0.0,0.0,0.0))
+	tform = trans ∘ LinearMap(quat)
+	settransform!(vis, tform)
+end
+
 abstract type AbstractVarsVis end
 
 abstract type AbstractPointPose end
@@ -16,9 +21,17 @@ end
 function visPose!(vis::Visualizer,
 				  tform::CoordinateTransformations.Transformation,
 				  updateonly::Bool=false;
-				  scale::Float64=0.2)
+				  scale::Float64=0.2,
+				  sphereScale::Float64=0.05,
+				  color=RGBA(1., 1, 0, 0.5))
 	if !updateonly
 		setobject!(vis, Triad(scale))
+
+		if sphereScale > 0.0
+			sphere = HyperSphere(Point(0., 0, 0), sphereScale)
+			matcolor = MeshPhongMaterial(color=color)
+			setobject!(vis[:bal], sphere, matcolor)
+		end
 	end
 	settransform!(vis, tform)
 	nothing
@@ -28,6 +41,12 @@ end
 mutable struct ArenaPoint2{T<:AbstractFloat} <: AbstractPointPose
 	x::T
 	y::T
+end
+
+mutable struct ArenaPoint3{T<:AbstractFloat} <: AbstractPointPose
+	x::T
+	y::T
+	z::T
 end
 
 function visPoint!(vis::Visualizer,
@@ -48,21 +67,21 @@ end
 function visNode!(vis::Visualizer,
 	              pose::ArenaPose2,
 				  updateonly::Bool=false;
-	              scale::Float64=0.2, #TODO move keyword params to params dict or named tuple?
-	              zoffset::Float64=0.0)::Nothing
+				  zoffset::Float64=0.0,
+	              kwargs...)::Nothing
 
-	tf = drawtransform ∘ Translation(pose.x, pose.y, zoffset) ∘ LinearMap(CTs.RotZ(pose.θ))
-	visPose!(vis, tf, updateonly, scale=scale)
+	tf = Translation(pose.x, pose.y, zoffset) ∘ LinearMap(CTs.RotZ(pose.θ))
+	visPose!(vis, tf, updateonly, kwargs...)
 end
 
 function visNode!(vis::Visualizer,
             	  point::ArenaPoint2,
 				  updateonly::Bool=false;
-                  scale::Float64=0.1,
-                  zoffset::Float64=0.0)::Nothing
+                  zoffset::Float64=0.0,
+				  kwargs...)::Nothing
 
-	tf = drawtransform ∘ Translation(point.x, point.y, zoffset)
-	visPoint!(vis, tf, updateonly, scale=scale)
+	tf = Translation(point.x, point.y, zoffset)
+	visPoint!(vis, tf, updateonly, kwargs...)
 
 end
 
@@ -118,6 +137,7 @@ function visualize!(vis::Visualizer, bfg::BasicFactorGraphPose)::Nothing
     xx, ll = IIF.ls(fgl)
     vars = union(xx, ll)
 
+	trackPoints = Point3f0[]
     # update the variable point-estimate cache
     for vsym in vars
 
@@ -162,7 +182,12 @@ function visualize!(vis::Visualizer, bfg::BasicFactorGraphPose)::Nothing
 
 		visNode!(vis[robotId][sessionId][groupsym][vsym], nodestruct, isnewnode)
 
+		#FIXME this is bad, but just testing
+		groupsym == :poses && push!(trackPoints, Point3f0(xmx[1],xmx[2],0.0))
+
     end
+
+	setobject!(vis[robotId][sessionId][:track], Object(PointCloud(trackPoints), LineBasicMaterial(), "Line"))
 
     return nothing
 end
@@ -372,15 +397,15 @@ High level interface to launch webserver process that draws a factor_graph_vis_t
 User factor_graph_vis_type should provide a visualize!(vis::Visualizer, factor_graph_vis_variables::T<:AbstractVarsVis ) function.
 """
 function visualize(visdatasets::Vector{AbstractVarsVis};
-                   show::Bool=true)::Nothing
+                   show::Bool=true, trans=Translation(0.0,0.0,0.0), quat::Rotations.Quat=Quat(1.0,0.0,0.0,0.0))::Nothing
     #
     global loopvis
-    global drawtransform
 
     loopvis = true
 
     # the visualizer object itself
     vis = startDefaultVisualization(show=show)
+	setGlobalDrawTransform!(vis, trans=trans, quat=quat)
 
     # run the visualization loop
     while loopvis
@@ -570,7 +595,7 @@ function drawPoses2!(botvis::BotVis2,
         else
             botvis.cachevars[x][3][:] = xmx
         end
-        settransform!(botvis.vis[Symbol(sessionId)][:poses][x], drawtransform ∘ trans)
+        settransform!(botvis.vis[Symbol(sessionId)][:poses][x], trans)
     end
 	return nothing
 end
@@ -596,7 +621,7 @@ function drawLandmarks2!(botvis::BotVis2,
         else
             botvis.cachevars[x][3][1:2] = xmx[1:2]
         end
-        settransform!(botvis.vis[Symbol(sessionId)][:landmarks][x], drawtransform ∘ trans)
+        settransform!(botvis.vis[Symbol(sessionId)][:landmarks][x], trans)
     end
 	return nothing
 end
