@@ -115,7 +115,7 @@ include("deprecated/Deprecated.jl")
 
 # user interaction
 include("HighLevelAPI.jl")
-
+include("Amphitheatre/Amphitheatre.jl")
 # plugins
 
 # Developer tools
