@@ -128,3 +128,115 @@ function visualize!(vis::Visualizer, basicfg::BasicFactorGraphPose)::Nothing
 
     return nothing
 end
+
+
+# ============================================================
+# -----------------------BasicGraffPose-----------------------
+# ============================================================
+
+struct BasicGraffPose <: AbstractAmphitheatre
+	robotId::String
+	sessionId::String
+	config::GraffConfig
+	nodes::Dict{Symbol, AbstractPointPose} #poseId, AbstractPointPose
+
+	meanmax::Symbol
+	zoffset::Float64
+	drawPath::Bool
+	#pose drawing propeties
+	poseProp::plDrawProp
+	#landmark drawing propeties
+	landmarkProp::plDrawProp
+end
+
+"""
+   $(SIGNATURES)
+Basic visualizer object to draw poses and landmarks from GraffSDK.
+"""
+function BasicGraffPose(config::GraffConfig;
+							  meanmax::Symbol=:max,
+						      zoffset::Float64=0.0,
+							  drawPath::Bool=true,
+							  poseProp::plDrawProp = plDrawProp(0.3, 0.1, RGBA(1,1,0,0.5)),
+							  landmarkProp::plDrawProp = plDrawProp(0.3, 0.2, RGBA(0,1,0,0.5)))
+
+   return BasicGraffPose(config.robotId, config.sessionId, config, Dict{Symbol,AbstractPointPose}(),
+							    meanmax,
+							    zoffset,
+							    drawPath,
+							    poseProp,
+							    landmarkProp)
+end
+
+function visualize!(vis::Visualizer, grafffg::BasicGraffPose)::Nothing
+	#TODO maybe improve this function to lower memmory allocations
+
+
+	# get the Graff factor graph object
+	robotId = grafffg.robotId
+	sessionId = grafffg.sessionId
+
+	nodes = GraffSDK.getNodes(robotId, sessionId).nodes
+
+	for nod in nodes
+
+
+		# TODO fix hack -- use softtype instead, see http://www.github.com/GearsAD/GraffSDK.jl#72
+		if nod.mapEst == nothing
+		    continue
+		end
+		if length(nod.mapEst) == 2
+		    typesym = :ArenaPoint2
+		elseif length(nod.mapEst) == 3 && nod.label[1] == 'x'
+		    typesym = :ArenaPose2
+		elseif length(nod.mapEst) == 3 && nod.label[1] == 'l'
+		    typesym = :ArenaPoint3
+		elseif length(nod.mapEst) == 6 && nod.label[1] == 'x'
+		    typesym = :ArenaPose3
+		else
+		    typesym = :error
+		    error("Unknown estimate dimension and naming")
+		end
+
+		nodef = getfield(Arena, typesym)
+		#NOTE make sure storage order and softtypes are always the same
+		nodestruct = nodef(nod.mapEst...)
+
+		# TODO Can we alwyas assume labels are correct? If so, this will work nicely
+		# nodelabels = Caesar.getData(vert).softtype.labels
+		# if length(nodelabels) > 0
+		# 	groupsym = Symbol(nodelabels[1])
+		# else
+		# 	groupsym = :group
+		# end
+
+		vsym = Symbol(nod.label)
+
+		if string(vsym)[1] == 'l'
+			groupsym = :landmarks
+			drawProp = grafffg.landmarkProp
+		elseif string(vsym)[1] == 'x'
+			groupsym = :poses
+			drawProp = grafffg.poseProp
+		else
+			@warn "Unknown symbol encountered $vsym"
+			groupsym = :unknown
+		end
+
+		isnewnode = !haskey(grafffg.nodes, vsym)
+		if isnewnode
+			push!(grafffg.nodes, vsym=>nodestruct)
+		else
+			grafffg.nodes[vsym] = nodestruct
+		end
+
+		# visNode!(vis[robotId][sessionId][groupsym][vsym], nodestruct, isnewnode)
+		visNode!(vis[robotId][sessionId][groupsym][vsym], nodestruct, isnewnode,
+				 zoffset = grafffg.zoffset,
+				 scale = drawProp.scale,
+				 sphereScale = drawProp.sphereScale,
+				 color = drawProp.color)
+	end
+
+	return nothing
+end

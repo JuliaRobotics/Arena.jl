@@ -58,6 +58,6 @@ addFactor!(fg2, [:l1], PriorPoint2(MvNormal([2.,0], Matrix(Diagonal([0.001, 0.00
 @async batchSolve!(fg2)
 
 ##
-@info "To stop call stopVis!()"
+@info "To stop call Arena.stopAmphiVis!()"
 #
 Arena.stopAmphiVis!()
