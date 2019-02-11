@@ -41,11 +41,12 @@ end
     $(SIGNATURES)
 Initialize empty visualizer window with home axis.  New browser window will be opened based on `show=true`.
 """
-function startMeshCatVisualizer(;start_browser::Bool=true,
-                                    draworigin::Bool=true,
-                                    originscale::Float64=1.0  )
+function startMeshCatVisualizer(;host=ip"127.0.0.1",
+								 start_browser::Bool=true,
+                                 draworigin::Bool=true,
+                                 originscale::Float64=1.0)
     #
-    global drawtransform
+    # global drawtransform
 
     viz = MeshCat.Visualizer()
     if draworigin
@@ -55,7 +56,7 @@ function startMeshCatVisualizer(;start_browser::Bool=true,
 
     # open a new browser tab if required
     # open(viz, start_browser=start_browser, host=ip"0.0.0.0") #waiting for merge
-	open(viz)#, host=ip"0.0.0.0")
+	open(viz, host=host, start_browser=start_browser)
 
     return viz
 end
@@ -67,14 +68,22 @@ High level interface to launch webserver process that draws a factor_graph_vis_t
 User factor_graph_vis_type should provide a visualize!(vis::Visualizer, factor_graph_vis_variables::T<:AbstractAmphitheatre ) function.
 """
 function visualize(visdatasets::Vector{AbstractAmphitheatre};
-                   show::Bool=true, trans=Translation(0.0,0.0,0.0), quat::Rotations.Quat=Quat(1.0,0.0,0.0,0.0))
+					trans=Translation(0.0,0.0,0.0),
+					quat::Rotations.Quat=Quat(1.0,0.0,0.0,0.0),
+				   	host=ip"127.0.0.1",
+					start_browser::Bool=true,
+				    draworigin::Bool=true,
+				    originscale::Float64=1.0)
     #
     global runAmphi
 
     runAmphi = true
 
     # the visualizer object itself
-    vis = startMeshCatVisualizer()
+    vis = startMeshCatVisualizer(host=host,
+								 start_browser=start_browser,
+								 draworigin=draworigin,
+								 originscale=originscale)
 	setGlobalDrawTransform!(vis, trans=trans, quat=quat)
 
     # run the visualization loop #TODO add is task done to avoid multiple tasks getting lost
