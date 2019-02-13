@@ -38,8 +38,8 @@ function BasicFactorGraphPose(robotId::String, sessionId::String, fg::FactorGrap
 							  meanmax::Symbol=:max,
 						      zoffset::Float64=0.0,
 							  drawPath::Bool=true,
-							  poseProp::plDrawProp = plDrawProp(0.3, 0.1, RGBA(1,1,0,0.5)),
-							  landmarkProp::plDrawProp = plDrawProp(0.3, 0.2, RGBA(0,1,0,0.5)))
+							  poseProp::plDrawProp = plDrawProp(0.15, 0.05, RGBA(1,1,0,0.5)),
+							  landmarkProp::plDrawProp = plDrawProp(0.2, 0.1, RGBA(0,1,0,0.5)))
 
     return BasicFactorGraphPose(robotId, sessionId, fg, Dict{Symbol,AbstractPointPose}(),
 							    meanmax,
@@ -77,7 +77,7 @@ function visualize!(vis::Visualizer, basicfg::BasicFactorGraphPose)::Nothing
         xmx = basicfg.meanmax == :max ? getKDEMax(X) : getKDEMean(X)
 
         # get the variable type
-        typestr = Caesar.getData(vert).softtype |> typeof
+        typestr = split(RoME.getData(vert).softtype |> typeof |> string, ".")[end]
 		typesym = Symbol("Arena$typestr")
 
 		nodef = getfield(Arena, typesym)
@@ -85,7 +85,7 @@ function visualize!(vis::Visualizer, basicfg::BasicFactorGraphPose)::Nothing
 		#NOTE make sure storage order and softtypes are always the same
 		nodestruct = nodef(xmx...)
 
-		nodelabels = Caesar.getData(vert).softtype.labels
+		nodelabels = []#unil issue is fixed in Caesar# FIXME RoME.getData(vert).softtype.labels # maybe moved to other data
 		if in("POSE", nodelabels)
 			groupsym = :poses
 			drawProp = basicfg.poseProp
@@ -156,9 +156,9 @@ Basic visualizer object to draw poses and landmarks from GraffSDK.
 function BasicGraffPose(config::GraffConfig;
 							  meanmax::Symbol=:max,
 						      zoffset::Float64=0.0,
-							  drawPath::Bool=true,
-							  poseProp::plDrawProp = plDrawProp(0.3, 0.1, RGBA(1,1,0,0.5)),
-							  landmarkProp::plDrawProp = plDrawProp(0.3, 0.2, RGBA(0,1,0,0.5)))
+							  drawPath::Bool=false,
+							  poseProp::plDrawProp = plDrawProp(0.1, 0.05, RGBA(1,1,0,0.5)),
+							  landmarkProp::plDrawProp = plDrawProp(0.2, 0.1, RGBA(0,1,0,0.5)))
 
    return BasicGraffPose(config.robotId, config.sessionId, config, Dict{Symbol,AbstractPointPose}(),
 							    meanmax,
@@ -182,6 +182,7 @@ function visualize!(vis::Visualizer, grafffg::BasicGraffPose)::Nothing
 
 
 		# TODO fix hack -- use softtype instead, see http://www.github.com/GearsAD/GraffSDK.jl#72
+		# getNode(nod.id).packed["softtype"] also of no use
 		if nod.mapEst == nothing
 		    continue
 		end
@@ -190,7 +191,8 @@ function visualize!(vis::Visualizer, grafffg::BasicGraffPose)::Nothing
 		elseif length(nod.mapEst) == 3 && nod.label[1] == 'x'
 		    typesym = :ArenaPose2
 		elseif length(nod.mapEst) == 3 && nod.label[1] == 'l'
-		    typesym = :ArenaPoint3
+		    typesym = :ArenaPose2
+			#FIXME confilct with Point3, we really need softtypes
 		elseif length(nod.mapEst) == 6 && nod.label[1] == 'x'
 		    typesym = :ArenaPose3
 		else
@@ -203,7 +205,7 @@ function visualize!(vis::Visualizer, grafffg::BasicGraffPose)::Nothing
 		nodestruct = nodef(nod.mapEst...)
 
 		# TODO Can we alwyas assume labels are correct? If so, this will work nicely
-		# nodelabels = Caesar.getData(vert).softtype.labels
+		# nodelabels = RoME.getData(vert).softtype.labels
 		# if length(nodelabels) > 0
 		# 	groupsym = Symbol(nodelabels[1])
 		# else
@@ -212,12 +214,23 @@ function visualize!(vis::Visualizer, grafffg::BasicGraffPose)::Nothing
 
 		vsym = Symbol(nod.label)
 
-		if string(vsym)[1] == 'l'
+		nodelabels = getNode(nod.id).labels
+		if in("LANDMARK", nodelabels)
 			groupsym = :landmarks
 			drawProp = grafffg.landmarkProp
+
+		elseif in("POSE", nodelabels)
+			groupsym = :poses
+			drawProp = grafffg.poseProp
+
+		elseif string(vsym)[1] == 'l'
+			groupsym = :landmarks
+			drawProp = grafffg.landmarkProp
+
 		elseif string(vsym)[1] == 'x'
 			groupsym = :poses
 			drawProp = grafffg.poseProp
+
 		else
 			@warn "Unknown symbol encountered $vsym"
 			groupsym = :unknown
