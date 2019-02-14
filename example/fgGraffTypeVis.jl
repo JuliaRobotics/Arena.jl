@@ -7,8 +7,8 @@ using ProgressMeter
 using UUIDs
 using IncrementalInference
 using RoME
-using Arena
-
+using Arena.Amphitheatre
+using Colors
 ##
 
 # 1a. Create a Configuration
@@ -72,12 +72,13 @@ addBearingRangeFactor(newBearingRangeFactor2)
 # call putReady to tell the solver it can use the new nodes. This is added to the end of the processing queue.
 putReady(true)
 
-# 5. Create AbstractVarsVis container to hold different visualizers
-visdatasets = Arena.AbstractVarsVis[]
-graffVis = Arena.BasicGraffPose(config)
+# 5. Create AbstractAmphitheatre container to hold different visualizers
+visdatasets = AbstractAmphitheatre[]
+graffVis = BasicGraffPose(config)
+
 push!(visdatasets, graffVis)
 
-vistask = @async Arena.visualize(visdatasets)
+vis, vistask = visualize(visdatasets)
 
 
 # 6. now create a local fg hexslam
@@ -90,11 +91,10 @@ addNode!(fg, :x0, Pose2)
 # Add at a fixed location PriorPose2 to pin :x0 to a starting location (10,10, pi/4)
 addFactor!(fg, [:x0], IIF.Prior( MvNormal([4; 0; -pi], Matrix(Diagonal([0.1;0.1;0.05].^2)) )))
 
-
 #
-romeVis = Arena.BasicFactorGraphPose("DemoRobot","LocalHexVisDemo"*string(uuid4())[1:6], fg)
-push!(visdatasets, romeVis)
+romeVis = BasicFactorGraphPose("DemoRobot","LocalHexVisDemo"*string(uuid4())[1:6], fg, meanmax=:mean, poseProp = plDrawProp(0.3, 0.1, RGBA(0,1,1,0.5)))
 
+push!(visdatasets, romeVis)
 
 
 # Drive around in a hexagon
@@ -122,5 +122,5 @@ batchsolve = @async batchSolve!(fg)
 
 
 ##
-@info "To stop call stopVis!()"
-# stopVis!()
+@info "To stop call stopAmphiVis!()"
+stopAmphiVis!()
