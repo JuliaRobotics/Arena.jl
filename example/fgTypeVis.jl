@@ -3,7 +3,7 @@
 using UUIDs
 using IncrementalInference
 using RoME
-using Arena
+using Arena.Amphitheatre
 
 ##
 # create a local fg hexslam
@@ -12,17 +12,17 @@ using Arena
 fg1 = initfg()
 v = addNode!(fg1, :x0, Pose2) # Add the first pose :x0
 addFactor!(fg1, [:x0], IIF.Prior( MvNormal([0; 0; 0], Matrix(Diagonal([0.1;0.1;0.05].^2)) ))) # Add at a fixed location PriorPose2 to pin :x0 to a starting location (10,10, pi/4)
-romeVis1 = Arena.BasicFactorGraphPose("DemoRobot","LocalHexVisDemo"*string(uuid4())[1:6], fg1, meanmax=:mean, poseProp = Arena.plDrawProp(0.3, 0.1, RGBA(0,1,1,0.5)))
+romeVis1 = BasicFactorGraphPose("DemoRobot","LocalHexVisDemo"*string(uuid4())[1:6], fg1, meanmax=:mean, poseProp = plDrawProp(0.3, 0.1, RGBA(0,1,1,0.5)))
 
 fg2 = initfg()
 addNode!(fg2, :x0, Pose2) # Add the first pose :x0
 addFactor!(fg2, [:x0], IIF.Prior( MvNormal([4; 0; -pi], Matrix(Diagonal([0.1;0.1;0.05].^2)) ))) # Add at a fixed location PriorPose2 to pin :x0 to a starting location (10,10, pi/4)
-romeVis2 = Arena.BasicFactorGraphPose("DemoRobot","LocalHexVisDemo"*string(uuid4())[1:6], fg2, meanmax=:mean)
+romeVis2 = BasicFactorGraphPose("DemoRobot","LocalHexVisDemo"*string(uuid4())[1:6], fg2, meanmax=:mean)
 
 # Create AbstractVarsVis container to hold different visualizers
-visdatasets = Arena.AbstractAmphitheatre[romeVis1, romeVis2]
+visdatasets = AbstractAmphitheatre[romeVis1, romeVis2]
 
-vis, vistask = Arena.visualize(visdatasets)
+vis, vistask = visualize(visdatasets, start_browser=true)
 
 ##
 for session in visdatasets
@@ -58,6 +58,6 @@ addFactor!(fg2, [:l1], PriorPoint2(MvNormal([2.,0], Matrix(Diagonal([0.001, 0.00
 @async batchSolve!(fg2)
 
 ##
-@info "To stop call Arena.stopAmphiVis!()"
+@info "To stop call stopAmphiVis!()"
 #
-Arena.stopAmphiVis!()
+stopAmphiVis!()

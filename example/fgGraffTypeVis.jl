@@ -7,7 +7,7 @@ using ProgressMeter
 using UUIDs
 using IncrementalInference
 using RoME
-using Arena
+using Arena.Amphitheatre
 using Colors
 ##
 
@@ -73,12 +73,12 @@ addBearingRangeFactor(newBearingRangeFactor2)
 putReady(true)
 
 # 5. Create AbstractAmphitheatre container to hold different visualizers
-visdatasets = Arena.AbstractAmphitheatre[]
-graffVis = Arena.BasicGraffPose(config)
+visdatasets = AbstractAmphitheatre[]
+graffVis = BasicGraffPose(config)
 
 push!(visdatasets, graffVis)
 
-vis, vistask = Arena.visualize(visdatasets)
+vis, vistask = visualize(visdatasets)
 
 
 # 6. now create a local fg hexslam
@@ -92,7 +92,7 @@ addNode!(fg, :x0, Pose2)
 addFactor!(fg, [:x0], IIF.Prior( MvNormal([4; 0; -pi], Matrix(Diagonal([0.1;0.1;0.05].^2)) )))
 
 #
-romeVis = Arena.BasicFactorGraphPose("DemoRobot","LocalHexVisDemo"*string(uuid4())[1:6], fg, meanmax=:mean, poseProp = Arena.plDrawProp(0.3, 0.1, RGBA(0,1,1,0.5)))
+romeVis = BasicFactorGraphPose("DemoRobot","LocalHexVisDemo"*string(uuid4())[1:6], fg, meanmax=:mean, poseProp = plDrawProp(0.3, 0.1, RGBA(0,1,1,0.5)))
 
 push!(visdatasets, romeVis)
 
@@ -122,5 +122,5 @@ batchsolve = @async batchSolve!(fg)
 
 
 ##
-@info "To stop call Arena.stopAmphiVis!()"
-Arena.stopAmphiVis!()
+@info "To stop call stopAmphiVis!()"
+stopAmphiVis!()

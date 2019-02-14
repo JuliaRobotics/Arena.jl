@@ -1,32 +1,57 @@
-# module Amphitheatre
+module Amphitheatre
 # TODO this can maybe be a module in Arena?
 using MeshCat
-using CoordinateTransformations
+using GeometryTypes
 using Colors
 using PlotUtils
 using Sockets: @ip_str, IPAddr, IPv4, IPv6
+#
+using Mongoc
 using GraffSDK
+using JSON2
 # using Caesar
 using RoME
-using JSON2
 
+#
 using DocStringExtensions
 # using Rotations
-# using TransformUtils
+using TransformUtils
+using CoordinateTransformations, Rotations
 # using FileIO
 # using Base64
 
 const CTs = CoordinateTransformations
 const TUs = TransformUtils
 
-# export
-# 	BasicFactorGraphPose,
-# 	AbstractAmphitheatre,
-# 	visualize
+export
+	BasicFactorGraphPose,
+	AbstractAmphitheatre,
+	visualize,
+	startMeshCatVisualizer,
+	stopAmphiVis!,
+	#camera
+	CameraModel,
+	#DepthImages
+	cloudFromDepthImageClampZ,
+	cloudFromDepthImage,
+	#Amphis
+	AbstractAmphitheatre,
+	plDrawProp,
+	BasicFactorGraphPose,
+	BasicGraffPose,
+	PCloudFactorGraphPose,
+	#re-export
+	RGBA,
+	@ip_str, IPAddr, IPv4, IPv6
 
-include("core.jl")
+
+include("../Common/CameraModel.jl")
+include("../Common/DepthImages.jl")
+
+include("common.jl")
 include("amphis.jl")
 include("pointclouds.jl")
+# include("pointcloudamphis.jl")
 
 
 global runAmphi = true
@@ -40,23 +65,19 @@ end
 
 """
     $(SIGNATURES)
-Initialize empty visualizer window with home axis.  New browser window will be opened based on `show=true`.
+Initialize empty visualizer window with home axis.  New browser window will be opened based on `start_browser=true`.
 """
 function startMeshCatVisualizer(;host=ip"127.0.0.1",
 								 start_browser::Bool=true,
                                  draworigin::Bool=true,
                                  originscale::Float64=1.0)
-    #
-    # global drawtransform
 
     viz = MeshCat.Visualizer()
     if draworigin
       setobject!( viz[:origin], Triad(originscale) )
-      # settransform!( viz[:origin], (Translation(0.0, 0.0, 0.0) ∘ LinearMap( CTs.Quat(1.0,0,0,0))) )
     end
 
     # open a new browser tab if required
-    # open(viz, start_browser=start_browser, host=ip"0.0.0.0") #waiting for merge
 	open(viz, host=host, start_browser=start_browser)
 
     return viz
@@ -106,4 +127,4 @@ end
 
 
 
-# end
+end

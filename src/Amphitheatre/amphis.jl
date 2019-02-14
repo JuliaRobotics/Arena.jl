@@ -80,7 +80,7 @@ function visualize!(vis::Visualizer, basicfg::BasicFactorGraphPose)::Nothing
         typestr = split(RoME.getData(vert).softtype |> typeof |> string, ".")[end]
 		typesym = Symbol("Arena$typestr")
 
-		nodef = getfield(Arena, typesym)
+		nodef = getfield(Amphitheatre, typesym)
 
 		#NOTE make sure storage order and softtypes are always the same
 		nodestruct = nodef(xmx...)
@@ -200,7 +200,7 @@ function visualize!(vis::Visualizer, grafffg::BasicGraffPose)::Nothing
 		    error("Unknown estimate dimension and naming")
 		end
 
-		nodef = getfield(Arena, typesym)
+		nodef = getfield(Amphitheatre, typesym)
 		#NOTE make sure storage order and softtypes are always the same
 		nodestruct = nodef(nod.mapEst...)
 
