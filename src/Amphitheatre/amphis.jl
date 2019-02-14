@@ -180,41 +180,23 @@ function visualize!(vis::Visualizer, grafffg::BasicGraffPose)::Nothing
 
 	for nod in nodes
 
-
-		# TODO fix hack -- use softtype instead, see http://www.github.com/GearsAD/GraffSDK.jl#72
-		# getNode(nod.id).packed["softtype"] also of no use
 		if nod.mapEst == nothing
 		    continue
 		end
-		if length(nod.mapEst) == 2
-		    typesym = :ArenaPoint2
-		elseif length(nod.mapEst) == 3 && nod.label[1] == 'x'
-		    typesym = :ArenaPose2
-		elseif length(nod.mapEst) == 3 && nod.label[1] == 'l'
-		    typesym = :ArenaPose2
-			#FIXME confilct with Point3, we really need softtypes
-		elseif length(nod.mapEst) == 6 && nod.label[1] == 'x'
-		    typesym = :ArenaPose3
-		else
-		    typesym = :error
-		    error("Unknown estimate dimension and naming")
-		end
+		# get the variable type
+		nodedetail = getNode(nod.id)
+		typestr = split(nodedetail.type, ".")[end]
+		typesym = Symbol("Arena$typestr")
 
 		nodef = getfield(Amphitheatre, typesym)
+
 		#NOTE make sure storage order and softtypes are always the same
 		nodestruct = nodef(nod.mapEst...)
 
-		# TODO Can we alwyas assume labels are correct? If so, this will work nicely
-		# nodelabels = RoME.getData(vert).softtype.labels
-		# if length(nodelabels) > 0
-		# 	groupsym = Symbol(nodelabels[1])
-		# else
-		# 	groupsym = :group
-		# end
 
 		vsym = Symbol(nod.label)
 
-		nodelabels = getNode(nod.id).labels
+		nodelabels = nodedetail.labels
 		if in("LANDMARK", nodelabels)
 			groupsym = :landmarks
 			drawProp = grafffg.landmarkProp
