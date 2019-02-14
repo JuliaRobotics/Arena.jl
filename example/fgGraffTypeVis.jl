@@ -86,7 +86,7 @@ vis, vistask = visualize(visdatasets)
 fg = initfg()
 
 # Add the first pose :x0
-addNode!(fg, :x0, Pose2)
+addNode!(fg, :x0, Pose2, labels=["POSE"])
 
 # Add at a fixed location PriorPose2 to pin :x0 to a starting location (10,10, pi/4)
 addFactor!(fg, [:x0], IIF.Prior( MvNormal([4; 0; -pi], Matrix(Diagonal([0.1;0.1;0.05].^2)) )))
@@ -101,7 +101,7 @@ push!(visdatasets, romeVis)
 for i in 0:5
   psym = Symbol("x$i")
   nsym = Symbol("x$(i+1)")
-  addNode!(fg, nsym, Pose2)
+  addNode!(fg, nsym, Pose2, labels=["POSE"])
   pp = Pose2Pose2(MvNormal([1.0;0;pi/3], Matrix(Diagonal([0.1;0.1;0.1].^2))))
   addFactor!(fg, [psym;nsym], pp )
 end

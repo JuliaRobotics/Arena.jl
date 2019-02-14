@@ -10,12 +10,12 @@ using Arena.Amphitheatre
 # start with an empty factor graph object
 
 fg1 = initfg()
-v = addNode!(fg1, :x0, Pose2) # Add the first pose :x0
+v = addNode!(fg1, :x0, Pose2, labels=["POSE"]) # Add the first pose :x0
 addFactor!(fg1, [:x0], IIF.Prior( MvNormal([0; 0; 0], Matrix(Diagonal([0.1;0.1;0.05].^2)) ))) # Add at a fixed location PriorPose2 to pin :x0 to a starting location (10,10, pi/4)
 romeVis1 = BasicFactorGraphPose("DemoRobot","LocalHexVisDemo"*string(uuid4())[1:6], fg1, meanmax=:mean, poseProp = plDrawProp(0.3, 0.1, RGBA(0,1,1,0.5)))
 
 fg2 = initfg()
-addNode!(fg2, :x0, Pose2) # Add the first pose :x0
+addNode!(fg2, :x0, Pose2, labels=["POSE"]) # Add the first pose :x0
 addFactor!(fg2, [:x0], IIF.Prior( MvNormal([4; 0; -pi], Matrix(Diagonal([0.1;0.1;0.05].^2)) ))) # Add at a fixed location PriorPose2 to pin :x0 to a starting location (10,10, pi/4)
 romeVis2 = BasicFactorGraphPose("DemoRobot","LocalHexVisDemo"*string(uuid4())[1:6], fg2, meanmax=:mean)
 
@@ -32,7 +32,7 @@ for session in visdatasets
     for i in 0:5
         psym = Symbol("x$i")
         nsym = Symbol("x$(i+1)")
-        addNode!(fg, nsym, Pose2)
+        addNode!(fg, nsym, Pose2, labels=["POSE"])
         pp = Pose2Pose2(MvNormal([1.0;0;pi/3+0.02], Matrix(Diagonal([0.01;0.01;0.1].^2))))
         addFactor!(fg, [psym;nsym], pp )
         ensureAllInitialized!(fg)

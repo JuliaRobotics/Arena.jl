@@ -27,6 +27,7 @@ export
 	BasicFactorGraphPose,
 	AbstractAmphitheatre,
 	visualize,
+	Visualizer,
 	startMeshCatVisualizer,
 	stopAmphiVis!,
 	#camera
