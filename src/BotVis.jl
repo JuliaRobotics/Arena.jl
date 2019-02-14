@@ -43,7 +43,7 @@ function drawPoses2!(botvis::BotVis2,
         if !haskey(botvis.cachevars, x)
             triad = Triad(triadLength)
             setobject!(botvis.vis[Symbol(sessionId)][:poses][x], triad)
-            botvis.cachevars[x] = (:ArenaPose2, [true;], xmx)
+            botvis.cachevars[x] = (:Pose2, [true;], xmx)
         else
             botvis.cachevars[x][3][:] = xmx
         end
@@ -69,7 +69,7 @@ function drawLandmarks2!(botvis::BotVis2,
         trans = Translation(xmx[1:2]..., 0.0)
         if !haskey(botvis.cachevars, x)
             setobject!(botvis.vis[Symbol(sessionId)][:landmarks][x], lmpoint, greenMat)
-            botvis.cachevars[x] = (:ArenaPoint2, [true;], [xmx[1]; xmx[2]; 0.0 ] )
+            botvis.cachevars[x] = (:Point2, [true;], [xmx[1]; xmx[2]; 0.0 ] )
         else
             botvis.cachevars[x][3][1:2] = xmx[1:2]
         end
