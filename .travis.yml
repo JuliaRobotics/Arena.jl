@@ -32,11 +32,14 @@ addons:
 before_script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ffmpeg; fi
 
+# script:
+#   - julia --color=yes -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("Arena")'
+#   - $TESTCMD --check-bounds=yes --color=yes -e 'using Pkg; Pkg.test("Arena", coverage=true)'
+#   # - julia --color=yes -e 'using MeshCat; MeshCat.develop_meshcat_assets(true)'
+#   # - julia --color=yes -e 'import Pkg; Pkg.build("MeshCat")'
 script:
-  - julia --color=yes -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("Arena")'
-  - $TESTCMD --check-bounds=yes --color=yes -e 'using Pkg; Pkg.test("Arena", coverage=true)'
-  # - julia --color=yes -e 'using MeshCat; MeshCat.develop_meshcat_assets(true)'
-  # - julia --color=yes -e 'import Pkg; Pkg.build("MeshCat")'
+  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - julia --project --check-bounds=yes -e 'import Pkg; Pkg.build(); Pkg.test(; coverage=true)'
 
 
 after_success:
