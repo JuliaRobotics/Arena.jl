@@ -11,7 +11,7 @@ end
 # ============================================================
 # --------------------TagOnPose--------------------
 # ============================================================
-import Arena.Amphitheatre: visualize!
+# import Arena.Amphitheatre: visualize!
 
 struct TagOnPose <: AbstractAmphitheatre
 	robotId::String

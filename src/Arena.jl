@@ -1,5 +1,9 @@
 module Arena
 
+include("Amphitheatre/Amphitheatre.jl")
+using .Amphitheatre
+
+#=
 # due to issue with ImageMagick and Pkg importing, the order is very sensitive here!
 # see https://github.com/JuliaIO/ImageMagick.jl/issues/142
 using ImageMagick
@@ -159,5 +163,5 @@ include("plugins/PointClouds.jl")
 
 
 
-
+=#
 end # module
