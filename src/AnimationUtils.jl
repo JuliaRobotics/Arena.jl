@@ -37,9 +37,9 @@ function findaxiscenter!(as::ArcPointsRangeSolve)
   vA, vB, vC = as.x1-as.center, as.x2-as.center, as.x3-as.center
   l1, l2 = norm(as.x1-as.x2), norm(as.x2-as.x3)
   halfl0 = 0.5*norm(as.x1-as.x3)
-  axt = l1 < l2 ? Base.cross(vA,vB) : Base.cross(vB,vC)
+  axt = l1 < l2 ? LinearAlgebra.cross(vA,vB) : LinearAlgebra.cross(vB,vC)
   as.axis[1:3] = axt / norm(axt)
-  ta = Base.cross(vA,vC)
+  ta = LinearAlgebra.cross(vA,vC)
   ta ./= norm(ta)
   alph = acos(halfl0/as.r)
   if norm(ta-as.axis) < 1e-4
