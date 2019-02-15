@@ -30,6 +30,9 @@ export
 	Visualizer,
 	startMeshCatVisualizer,
 	stopAmphiVis!,
+	#Common visse
+	visPose!,
+	visPoint!,
 	#camera
 	CameraModel,
 	#DepthImages
@@ -53,6 +56,7 @@ include("common.jl")
 include("amphis.jl")
 include("pointclouds.jl")
 # include("pointcloudamphis.jl")
+include("reprojectAmphis.jl")
 
 
 global runAmphi = true
