@@ -39,7 +39,7 @@ before_script:
 #   # - julia --color=yes -e 'import Pkg; Pkg.build("MeshCat")'
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia --project --check-bounds=yes -e 'import Pkg; Pkg.build(); Pkg.test(; coverage=true)'
+  - TESTCMD --project --check-bounds=yes -e 'import Pkg; Pkg.build(); Pkg.test(; coverage=true)'
 
 
 after_success:
