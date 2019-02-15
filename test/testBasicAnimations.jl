@@ -1,6 +1,7 @@
 #
 using Test
 using Arena
+using LinearAlgebra
 
 @testset "[TEST] basics" begin
 

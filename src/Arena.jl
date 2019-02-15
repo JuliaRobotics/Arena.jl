@@ -5,6 +5,7 @@ module Arena
 using ImageMagick
 using PlotUtils
 using Caesar, ImageView, Images, MeshIO, MeshCat
+using LinearAlgebra
 
 using Rotations, CoordinateTransformations
 using TransformUtils
@@ -96,10 +97,12 @@ global drawtransform = Translation(0.0,0.0,0.0) ∘ LinearMap(Quat(1.0,0.0,0.0,0
 
 
 # types and models
-include("CameraModel.jl")
+include("Common/CameraModel.jl")
 include("VisualizationTypes.jl")
 include("RobotSceneModels.jl")
 
+# Common
+include("Common/DepthImages.jl")
 # utils
 include("GeneralUtils.jl")
 include("ColorUtils.jl")
@@ -115,6 +118,8 @@ include("deprecated/Deprecated.jl")
 
 # user interaction
 include("HighLevelAPI.jl")
+include("Amphitheatre/Amphitheatre.jl")
+using .Amphitheatre
 
 # plugins
 
