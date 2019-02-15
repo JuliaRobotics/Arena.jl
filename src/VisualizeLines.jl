@@ -6,7 +6,7 @@ function drawLine!(vispath, from::Vector{Float64}, to::Vector{Float64}; scale=0.
   len = norm(vector)
   buildline = Float64[len, 0, 0]
 
-  v = norm(buildline-vector) > 1e-10 ? Base.cross(buildline, vector)  : [0,0,1.0]
+  v = norm(buildline-vector) > 1e-10 ? LinearAlgebra.cross(buildline, vector)  : [0,0,1.0]
   axis = v/norm(v)
   angle = acos(dot(vector, buildline)/(len^2) )
   rot = LinearMap( CoordinateTransformations.AngleAxis(angle, axis...) )

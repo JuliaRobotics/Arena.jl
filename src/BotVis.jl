@@ -1,8 +1,12 @@
-
-
-
-# something like this later for botvis 3
-# poses3::Dict{Symbol,Tuple{Point{3,Float32},Quat{Float64}}}
+"""
+    $(SIGNATURES)
+Initialize empty visualizer
+"""
+function initVis(;showLocal::Bool = true)
+    vis = Visualizer()
+    showLocal && open(vis)
+    return vis
+end
 
 
 
@@ -43,7 +47,7 @@ function drawPoses2!(botvis::BotVis2,
         else
             botvis.cachevars[x][3][:] = xmx
         end
-        settransform!(botvis.vis[Symbol(sessionId)][:poses][x], drawtransform ∘ trans)
+        settransform!(botvis.vis[Symbol(sessionId)][:poses][x], trans)
     end
 	return nothing
 end
@@ -69,7 +73,7 @@ function drawLandmarks2!(botvis::BotVis2,
         else
             botvis.cachevars[x][3][1:2] = xmx[1:2]
         end
-        settransform!(botvis.vis[Symbol(sessionId)][:landmarks][x], drawtransform ∘ trans)
+        settransform!(botvis.vis[Symbol(sessionId)][:landmarks][x], trans)
     end
 	return nothing
 end
