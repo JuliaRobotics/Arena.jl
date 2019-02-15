@@ -22,3 +22,6 @@ Requires
 FileIO
 JSON
 PlotUtils
+Mongoc
+JSON2
+RoME
