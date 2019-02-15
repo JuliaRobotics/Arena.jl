@@ -39,11 +39,13 @@ export
 	cloudFromDepthImageClampZ,
 	cloudFromDepthImage,
 	#Amphis
+	TagkTl,
 	AbstractAmphitheatre,
 	plDrawProp,
 	BasicFactorGraphPose,
 	BasicGraffPose,
 	PCloudFactorGraphPose,
+	GraffTagOnPose,
 	#re-export
 	RGBA,
 	@ip_str, IPAddr, IPv4, IPv6
