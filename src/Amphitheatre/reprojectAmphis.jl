@@ -115,8 +115,8 @@ function visualize!(vis::Visualizer, top::GraffTagOnPose)::Nothing
 			dataEntries = getDataEntries(robotId, sessionId, noderesp.id)
 			!("TagkTl" in [de.id for de in dataEntries]) && continue
 
-			node = getNode(robotId, sessionId, noderesp.id)
-			d = GraffSDK.getData(robotId, sessionId, node.id, "TagkTl")
+			# node = getNode(robotId, sessionId, noderesp.id)
+			d = GraffSDK.getData(robotId, sessionId, noderesp.id, "TagkTl")
 			jtags = JSON2.read(d.data)
 			poseKey = Symbol(node.label)
 

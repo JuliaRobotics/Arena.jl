@@ -57,7 +57,7 @@ include("../Common/DepthImages.jl")
 include("common.jl")
 include("amphis.jl")
 include("pointclouds.jl")
-# include("pointcloudamphis.jl")
+include("pointcloudAmphis.jl")
 include("reprojectAmphis.jl")
 
 
@@ -132,6 +132,22 @@ function visualize(visdatasets::Vector{AbstractAmphitheatre};
     return vis, runAphiTask
 end
 
-
+function restartVisualize(vis, visdatasets)
+	global runAmphi
+	runAmphi = true
+	runAphiTask = @async begin
+		while runAmphi
+			# iterate through all datasets #vir wat staan rose_fgl?
+			for rose_fgl in visdatasets
+				# each dataset should provide an visualize function
+				visualize!(vis, rose_fgl)
+			end
+			# take a break and repeat
+			sleep(1)
+		end
+		@info "visualize is finalizing."
+	end
+	return runAphiTask
+end
 
 end
