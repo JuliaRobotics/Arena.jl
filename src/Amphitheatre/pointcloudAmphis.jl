@@ -35,15 +35,15 @@ function visualize!(vis::Visualizer, pcop::GraffCloudOnPose)::Nothing
 		config = pcop.config
 
 
-		nodes = getNodes(robotId, sessionId)
+		sessionDataEntries = getDataEntriesForSession(config)
 
-		for noderesp = nodes.nodes
+		for nodeKey = keys(sessionDataEntries)
 
-			dataEntries = getDataEntries(robotId, sessionId, noderesp.id)
+			dataEntries = sessionDataEntries[nodeKey]
+
 			!("rawdepth" in [de.id for de in dataEntries]) && continue
 
-			# node = getNode(robotId, sessionId, noderesp.id)
-			elem = GraffSDK.getData(robotId, sessionId, noderesp.id, "rawdepth")
+			elem = GraffSDK.getData(robotId, sessionId, dataEntries[1].nodeId, "rawdepth")
 
 			if elem == nothing
 				# @info "no rawdepth for $vsym"

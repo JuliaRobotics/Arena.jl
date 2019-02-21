@@ -1,5 +1,5 @@
 module Amphitheatre
-# TODO this can maybe be a module in Arena?
+
 using MeshCat
 using GeometryTypes
 using Colors
@@ -17,6 +17,7 @@ using DocStringExtensions
 # using Rotations
 using TransformUtils
 using CoordinateTransformations, Rotations
+using StaticArrays
 # using FileIO
 # using Base64
 
@@ -46,6 +47,7 @@ export
 	BasicGraffPose,
 	PCloudFactorGraphPose,
 	GraffTagOnPose,
+	GraffCloudOnPose,
 	#re-export
 	RGBA,
 	@ip_str, IPAddr, IPv4, IPv6

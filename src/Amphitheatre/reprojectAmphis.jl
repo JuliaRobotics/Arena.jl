@@ -5,7 +5,7 @@ Struct to store tag id with translations from body to landmark
 struct TagkTl
 	tagID::Symbol
 	ktl::Translation
-	kQl::Quat
+	kQl::SVector{4}#Quat #Quat does not serialize as wanted out of the box so use SVector instead
 end
 
 # ============================================================
@@ -51,7 +51,7 @@ function visualize!(vis::Visualizer, top::TagOnPose)::Nothing
 
 			for tag = tagsOnPoses[poseKey]
 
-				tform = tag.ktl ∘ LinearMap(tag.kQl)
+				tform = tag.ktl ∘ LinearMap(Quad(tag.kQl...))
 
 				visPose!(vis[robotId][sessionId][:poses][poseKey][tag.tagID], tform,
 							scale = tagProp.scale,
@@ -107,16 +107,15 @@ function visualize!(vis::Visualizer, top::GraffTagOnPose)::Nothing
 		tagProp = top.tagProp
 		config = top.config
 
+		sessionDataEntries = getDataEntriesForSession(config)
 
-		nodes = getNodes(robotId, sessionId)
+		for nodeKey = keys(sessionDataEntries)
 
-		for noderesp = nodes.nodes
+			dataEntries = sessionDataEntries[nodeKey]
 
-			dataEntries = getDataEntries(robotId, sessionId, noderesp.id)
 			!("TagkTl" in [de.id for de in dataEntries]) && continue
 
-			# node = getNode(robotId, sessionId, noderesp.id)
-			d = GraffSDK.getData(robotId, sessionId, noderesp.id, "TagkTl")
+			d = GraffSDK.getData(robotId, sessionId, dataEntries[1].nodeId, "TagkTl")
 			jtags = JSON2.read(d.data)
 			poseKey = Symbol(node.label)
 
@@ -125,7 +124,7 @@ function visualize!(vis::Visualizer, top::GraffTagOnPose)::Nothing
 
 				for tag = jtags
 
-					tform = Translation(tag.ktl.translation) ∘ LinearMap(Quat(tag.kQl))
+					tform = Translation(tag.ktl.translation) ∘ LinearMap(Quat(tag.kQl...))
 
 					visPose!(vis[robotId][sessionId][:poses][poseKey][Symbol(tag.tagID)], tform,
 								scale = tagProp.scale,
