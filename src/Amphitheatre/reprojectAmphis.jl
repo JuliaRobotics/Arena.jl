@@ -51,7 +51,7 @@ function visualize!(vis::Visualizer, top::TagOnPose)::Nothing
 
 			for tag = tagsOnPoses[poseKey]
 
-				tform = tag.ktl ∘ LinearMap(Quad(tag.kQl...))
+				tform = tag.ktl ∘ LinearMap(Quat(tag.kQl...))
 
 				visPose!(vis[robotId][sessionId][:poses][poseKey][tag.tagID], tform,
 							scale = tagProp.scale,
