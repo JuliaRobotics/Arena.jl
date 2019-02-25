@@ -176,7 +176,7 @@ function visualize!(vis::Visualizer, grafffg::BasicGraffPose)::Nothing
 	robotId = grafffg.robotId
 	sessionId = grafffg.sessionId
 
-	nodes = GraffSDK.getNodes(robotId, sessionId).nodes
+	nodes = GraffSDK.getVariables(robotId, sessionId)
 
 	for nod in nodes
 
@@ -184,7 +184,7 @@ function visualize!(vis::Visualizer, grafffg::BasicGraffPose)::Nothing
 		    continue
 		end
 		# get the variable type
-		nodedetail = getNode(nod.id)
+		nodedetail = getVariable(nod.id)
 		typestr = split(nodedetail.type, ".")[end]
 		typesym = Symbol("Arena$typestr")
 
