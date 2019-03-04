@@ -37,7 +37,7 @@ Basic visualizer object to draw poses and landmarks.
 function BasicFactorGraphPose(robotId::String, sessionId::String, fg::FactorGraph;
 							  meanmax::Symbol=:max,
 						      zoffset::Float64=0.0,
-							  drawPath::Bool=true,
+							  drawPath::Bool=false,
 							  poseProp::plDrawProp = plDrawProp(0.15, 0.05, RGBA(1,1,0,0.5)),
 							  landmarkProp::plDrawProp = plDrawProp(0.2, 0.1, RGBA(0,1,0,0.5)))
 
