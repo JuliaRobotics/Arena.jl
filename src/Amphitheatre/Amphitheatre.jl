@@ -45,11 +45,13 @@ export
 	plDrawProp,
 	BasicFactorGraphPose,
 	BasicGraffPose,
+	TagOnPose,
 	PCloudFactorGraphPose,
 	GraffTagOnPose,
 	GraffCloudOnPose,
 	#re-export
 	RGBA,
+	ColorGradient, cgrad,
 	@ip_str, IPAddr, IPv4, IPv6
 
 
