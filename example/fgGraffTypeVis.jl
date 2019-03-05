@@ -68,8 +68,8 @@ end
 # Ref: https://github.com/dehann/RoME.jl/blob/master/examples/Slam2dExample.jl#L35
 addVariable(:l1, Point2, ["LANDMARK"])
 p2br2 = Pose2Point2BearingRange(Normal(0,0.1),Normal(2.0,0.2))
-addFactor([:x0; :l0], p2br2)
-addFactor([:x6; :l0], p2br2)
+addFactor([:x0; :l1], p2br2)
+addFactor([:x6; :l1], p2br2)
 
 # Landmarks generally require more work once they're created, e.g. creating factors,
 # so they are not set to ready by default. Once you've completed all the factor links and want to solve,
