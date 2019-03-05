@@ -35,7 +35,7 @@ function visualize!(vis::Visualizer, pcop::GraffCloudOnPose)::Nothing
 		config = pcop.config
 
 
-		sessionDataEntries = getDataEntriesForSession(config)
+		sessionDataEntries = getSessionDataEntries(config.robotId, config.sessionId)
 
 		for nodeKey = keys(sessionDataEntries)
 
@@ -49,8 +49,9 @@ function visualize!(vis::Visualizer, pcop::GraffCloudOnPose)::Nothing
 				# @info "no rawdepth for $vsym"
 				continue
 			end
-
-			depthImage = JSON2.read(elem.data)
+			println(String(elem.data))
+			depthImage = JSON2.read(String(elem.data))
+			# es = String(copy(elem.data[1:findfirst(elem.data .== 0x00)]));
 
 			kTc = (SE3([0,0,0], Quaternion(Float64.(depthImage.kQi[1:4]))))
 			trans = Translation([0,0,0])∘LinearMap(Quat(kTc.R.R))

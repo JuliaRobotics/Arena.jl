@@ -48,25 +48,29 @@ end
 println(session)
 
 # 4. Drive around in a hexagon
+addVariable(:x0, Pose2, ["POSE"])
+# Add at a fixed location PriorPose2 to pin :x0 to a starting location (10,10, pi/4)
+addFactor([:x0], IIF.Prior( MvNormal([0.0; 0.0; 0.0], Matrix(Diagonal([0.1;0.1;0.05].^2)) )))
+
+
 println(" - Adding hexagonal driving pattern to session...")
-@showprogress for i in 1:6
-    deltaMeasurement = [1.0;0;pi/3]
-    pOdo = Float64[0.1 0 0; 0 0.1 0; 0 0 0.1]
-    println(" - Measurement $i: Adding new odometry measurement '$deltaMeasurement'...")
-    @time addOdometryMeasurement(deltaMeasurement, pOdo)
+@showprogress for i in 0:5
+    psym = Symbol("x$i")
+    nsym = Symbol("x$(i+1)")
+    println(" - Pose $nsym: Adding new odometry measurement...")
+    addVariable(nsym, Pose2, ["POSE"])
+
+    pp = Pose2Pose2(MvNormal([1.0;0;pi/3], Matrix(Diagonal([0.1;0.1;0.1].^2))))
+    addFactor([psym;nsym], pp)
 end
 
 # 5. Now lets add a couple landmarks
 # Ref: https://github.com/dehann/RoME.jl/blob/master/examples/Slam2dExample.jl#L35
-response = addVariable("l1", "Point2", ["LANDMARK"])
-newBearingRangeFactor = BearingRangeRequest("x0", "l1",
-                          DistributionRequest("Normal", Float64[0; 0.1]),
-                          DistributionRequest("Normal", Float64[2.0; 0.2]))
-addBearingRangeFactor(newBearingRangeFactor)
-newBearingRangeFactor2 = BearingRangeRequest("x6", "l1",
-                           DistributionRequest("Normal", Float64[0; 0.1]),
-                           DistributionRequest("Normal", Float64[2.0; 0.2]))
-addBearingRangeFactor(newBearingRangeFactor2)
+addVariable(:l1, Point2, ["LANDMARK"])
+p2br2 = Pose2Point2BearingRange(Normal(0,0.1),Normal(2.0,0.2))
+addFactor([:x0; :l1], p2br2)
+addFactor([:x6; :l1], p2br2)
+
 # Landmarks generally require more work once they're created, e.g. creating factors,
 # so they are not set to ready by default. Once you've completed all the factor links and want to solve,
 # call putReady to tell the solver it can use the new nodes. This is added to the end of the processing queue.
@@ -86,7 +90,7 @@ vis, vistask = visualize(visdatasets)
 fg = initfg()
 
 # Add the first pose :x0
-addNode!(fg, :x0, Pose2, labels=["POSE"])
+addVariable!(fg, :x0, Pose2, labels=["POSE"])
 
 # Add at a fixed location PriorPose2 to pin :x0 to a starting location (10,10, pi/4)
 addFactor!(fg, [:x0], IIF.Prior( MvNormal([4; 0; -pi], Matrix(Diagonal([0.1;0.1;0.05].^2)) )))
@@ -101,14 +105,14 @@ push!(visdatasets, romeVis)
 for i in 0:5
   psym = Symbol("x$i")
   nsym = Symbol("x$(i+1)")
-  addNode!(fg, nsym, Pose2, labels=["POSE"])
+  addVariable!(fg, nsym, Pose2, labels=["POSE"])
   pp = Pose2Pose2(MvNormal([1.0;0;pi/3], Matrix(Diagonal([0.1;0.1;0.1].^2))))
   addFactor!(fg, [psym;nsym], pp )
 end
 
 
 # Add landmarks with Bearing range measurements
-addNode!(fg, :l1, Point2, labels=["LANDMARK"])
+addVariable!(fg, :l1, Point2, labels=["LANDMARK"])
     p2br = Pose2Point2BearingRange(Normal(0,0.1),Normal(2.0,0.2))
     addFactor!(fg, [:x0; :l1], p2br)
 

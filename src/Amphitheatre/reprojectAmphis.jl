@@ -107,7 +107,7 @@ function visualize!(vis::Visualizer, top::GraffTagOnPose)::Nothing
 		tagProp = top.tagProp
 		config = top.config
 
-		sessionDataEntries = getDataEntriesForSession(config)
+		sessionDataEntries = getSessionDataEntries(config.robotId, config.sessionId)
 
 		for nodeKey = keys(sessionDataEntries)
 
@@ -116,8 +116,8 @@ function visualize!(vis::Visualizer, top::GraffTagOnPose)::Nothing
 			!("TagkTl" in [de.id for de in dataEntries]) && continue
 
 			d = GraffSDK.getData(robotId, sessionId, dataEntries[1].nodeId, "TagkTl")
-			jtags = JSON2.read(d.data)
-			poseKey = Symbol(node.label)
+			jtags = JSON2.read(String(d.data))
+			poseKey = Symbol(nodeKey)
 
 			if !get(isdrawn, poseKey, false)
 				haskey(isdrawn, poseKey) ? isdrawn[poseKey] = true : push!(isdrawn, poseKey=>true)
