@@ -43,13 +43,13 @@ function visualize!(vis::Visualizer, pcop::GraffCloudOnPose)::Nothing
 
 			!("rawdepth" in [de.id for de in dataEntries]) && continue
 
-			elem = GraffSDK.getData(robotId, sessionId, dataEntries[1].nodeId, "rawdepth")
+			elem = GraffSDK.getData(robotId, sessionId, dataEntries[1].neoNodeId, "rawdepth")
 
 			if elem == nothing
 				# @info "no rawdepth for $vsym"
 				continue
 			end
-			println(String(elem.data))
+
 			depthImage = JSON2.read(String(elem.data))
 			# es = String(copy(elem.data[1:findfirst(elem.data .== 0x00)]));
 
