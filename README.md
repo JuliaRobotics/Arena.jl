@@ -24,7 +24,7 @@ This package is built in the [Julia](http://www.julialang.org) or ([JuliaPro](ht
 
 # Installation
 
-We are transitioning to [MeshCat.jl](http://www.github.com/JuliaRobotics/MeshCat.jl), .
+We are transitioning to [MeshCat.jl](http://www.github.com/rdeits/MeshCat.jl), .
 This is registed with Julia METADATA but please use current master branch.
 ```julia
 julia> ] # activate pkg manager
