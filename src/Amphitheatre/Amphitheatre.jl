@@ -9,6 +9,7 @@ using Sockets: @ip_str, IPAddr, IPv4, IPv6
 using Mongoc
 using GraffSDK
 using JSON2
+using Base64
 # using Caesar
 using RoME
 

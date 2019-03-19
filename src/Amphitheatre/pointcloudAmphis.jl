@@ -50,16 +50,16 @@ function visualize!(vis::Visualizer, pcop::GraffCloudOnPose)::Nothing
 				continue
 			end
 
-			depthImage = JSON2.read(String(elem.data))
+			depthImage = JSON2.read(elem.data)
 			# es = String(copy(elem.data[1:findfirst(elem.data .== 0x00)]));
 
 			kTc = (SE3([0,0,0], Quaternion(Float64.(depthImage.kQi[1:4]))))
 			trans = Translation([0,0,0])∘LinearMap(Quat(kTc.R.R))
 
-			w = depthImage.image.width
-			h = depthImage.image.height
+			w = depthImage.width
+			h = depthImage.height
 
-			depthim = reshape(reinterpret(UInt16,UInt8.(depthImage.image.data)), (w, h))'[:,:]
+			depthim = reshape(reinterpret(UInt16,base64decode(depthImage.data[1].base64)), (w, h))'[:,:]
 
 			pointcloud = cloudFromDepthImageClampZ(depthim, pcop.dcam, trans, maxrange=3f0, clampz = [-0.5f0,0.5f0], colmap=pcop.colmap)
 			# pointcloud = cloudFromDepthImage(depthim, pcop.dcam, trans, maxrange=3f0)
