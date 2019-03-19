@@ -3,9 +3,6 @@ language: julia
 matrix:
   include:
     - os: linux
-      julia: 0.7
-      env: TESTCMD="xvfb-run julia"
-    - os: linux
       julia: 1.0
       env: TESTCMD="xvfb-run julia"
     - os: linux

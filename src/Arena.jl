@@ -9,6 +9,7 @@ using .Amphitheatre
 using ImageMagick
 using PlotUtils
 using Caesar, ImageView, Images, MeshIO, MeshCat
+using LinearAlgebra
 
 using Rotations, CoordinateTransformations
 using TransformUtils
