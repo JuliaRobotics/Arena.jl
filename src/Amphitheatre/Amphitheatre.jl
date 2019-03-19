@@ -1,5 +1,5 @@
 module Amphitheatre
-# TODO this can maybe be a module in Arena?
+
 using MeshCat
 using GeometryTypes
 using Colors
@@ -9,6 +9,7 @@ using Sockets: @ip_str, IPAddr, IPv4, IPv6
 using Mongoc
 using GraffSDK
 using JSON2
+using Base64
 # using Caesar
 using RoME
 
@@ -17,6 +18,7 @@ using DocStringExtensions
 # using Rotations
 using TransformUtils
 using CoordinateTransformations, Rotations
+using StaticArrays
 # using FileIO
 # using Base64
 
@@ -30,19 +32,27 @@ export
 	Visualizer,
 	startMeshCatVisualizer,
 	stopAmphiVis!,
+	#Common visse
+	visPose!,
+	visPoint!,
 	#camera
 	CameraModel,
 	#DepthImages
 	cloudFromDepthImageClampZ,
 	cloudFromDepthImage,
 	#Amphis
+	TagkTl,
 	AbstractAmphitheatre,
 	plDrawProp,
 	BasicFactorGraphPose,
 	BasicGraffPose,
+	TagOnPose,
 	PCloudFactorGraphPose,
+	GraffTagOnPose,
+	GraffCloudOnPose,
 	#re-export
 	RGBA,
+	ColorGradient, cgrad,
 	@ip_str, IPAddr, IPv4, IPv6
 
 
@@ -52,7 +62,8 @@ include("../Common/DepthImages.jl")
 include("common.jl")
 include("amphis.jl")
 include("pointclouds.jl")
-# include("pointcloudamphis.jl")
+include("pointcloudAmphis.jl")
+include("reprojectAmphis.jl")
 
 
 global runAmphi = true
@@ -126,6 +137,22 @@ function visualize(visdatasets::Vector{AbstractAmphitheatre};
     return vis, runAphiTask
 end
 
-
+function restartVisualize(vis, visdatasets)
+	global runAmphi
+	runAmphi = true
+	runAphiTask = @async begin
+		while runAmphi
+			# iterate through all datasets #vir wat staan rose_fgl?
+			for rose_fgl in visdatasets
+				# each dataset should provide an visualize function
+				visualize!(vis, rose_fgl)
+			end
+			# take a break and repeat
+			sleep(1)
+		end
+		@info "visualize is finalizing."
+	end
+	return runAphiTask
+end
 
 end

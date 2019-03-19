@@ -25,3 +25,4 @@ PlotUtils
 Mongoc
 JSON2
 RoME
+StaticArrays

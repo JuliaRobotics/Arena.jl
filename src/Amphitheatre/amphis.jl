@@ -37,7 +37,7 @@ Basic visualizer object to draw poses and landmarks.
 function BasicFactorGraphPose(robotId::String, sessionId::String, fg::FactorGraph;
 							  meanmax::Symbol=:max,
 						      zoffset::Float64=0.0,
-							  drawPath::Bool=true,
+							  drawPath::Bool=false,
 							  poseProp::plDrawProp = plDrawProp(0.15, 0.05, RGBA(1,1,0,0.5)),
 							  landmarkProp::plDrawProp = plDrawProp(0.2, 0.1, RGBA(0,1,0,0.5)))
 
@@ -176,7 +176,7 @@ function visualize!(vis::Visualizer, grafffg::BasicGraffPose)::Nothing
 	robotId = grafffg.robotId
 	sessionId = grafffg.sessionId
 
-	nodes = GraffSDK.getNodes(robotId, sessionId).nodes
+	nodes = GraffSDK.getVariables(robotId, sessionId, details=true)
 
 	for nod in nodes
 
@@ -184,8 +184,10 @@ function visualize!(vis::Visualizer, grafffg::BasicGraffPose)::Nothing
 		    continue
 		end
 		# get the variable type
-		nodedetail = getNode(nod.id)
-		typestr = split(nodedetail.type, ".")[end]
+		nodedetail = nod#getVariable(nod.id)
+		#FIXME temp fix? i would prever only the type
+		# typestr = split(nodedetail.type, ".")[end]
+		typestr = split(nodedetail.type, ('.','('))[2]
 		typesym = Symbol("Arena$typestr")
 
 		nodef = getfield(Amphitheatre, typesym)
@@ -196,7 +198,7 @@ function visualize!(vis::Visualizer, grafffg::BasicGraffPose)::Nothing
 
 		vsym = Symbol(nod.label)
 
-		nodelabels = nodedetail.labels
+		nodelabels = nodedetail.tags
 		if in("LANDMARK", nodelabels)
 			groupsym = :landmarks
 			drawProp = grafffg.landmarkProp

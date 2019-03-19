@@ -18,7 +18,6 @@ using FileIO
 using JSON
 using Base64
 
-
 const CTs = CoordinateTransformations
 const TUs = TransformUtils
 
@@ -155,10 +154,6 @@ include("plugins/VisualizationDefault.jl")
 include("plugins/GetRobotConfiguration.jl")
 include("plugins/ReprojectBearingRange.jl")
 include("plugins/PointClouds.jl")
-
-
-
-
 
 
 end # module
