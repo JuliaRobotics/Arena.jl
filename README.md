@@ -31,6 +31,10 @@ julia> ] # activate pkg manager
 (v1.0) pkg> add Arena#master
 ```
 
+# Notice
+
+Arena [has the ability](https://github.com/JuliaRobotics/Arena.jl/blob/99a2ce22b25befaba294a9b9828ec8650520db64/src/Amphitheatre/Amphitheatre.jl#L10) to request cloud server information for visualization but will never send or start receiving any information unless the user explicitly requests authentication from the [GraffSDK.jl](GearsAD/GraphSDK.jl) servers.
+
 # Credits
 
 This package depends greatly on the work of others.  Please see the [REQUIRE file](/REQUIRE) for those dependencies.
