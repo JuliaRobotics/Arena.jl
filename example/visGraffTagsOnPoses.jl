@@ -1,3 +1,4 @@
+using ImageMagick  # maybe 16.04 specific requirement
 using Arena.Amphitheatre
 using RoME
 using GraffSDK
