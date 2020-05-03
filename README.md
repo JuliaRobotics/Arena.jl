@@ -41,4 +41,4 @@ Arena [has the ability](https://github.com/JuliaRobotics/Arena.jl/blob/99a2ce22b
 
 # Credits
 
-This package depends greatly on the work of others.  Please see the [REQUIRE file](/REQUIRE) for those dependencies.
+This package depends greatly on the work of others.  Please see the [Project file](/Project.toml) for those dependencies.
