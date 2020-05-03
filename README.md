@@ -1,3 +1,7 @@
+# TEMPORARY STATUS UPDATE (2Q2020)
+
+This package will be reinvigorated soon, following updates to other upstream packages in the Caesar.jl ecosystem.
+
 # Arena.jl
 
 Collection of 3D visualizations associated with the [Caesar.jl](http://www.github.com/JuliaRobotics/Caesar.jl.git) and [RoME.jl](http://www.github.com/JuliaRobotics/RoME.jl.git) robotic navigation packages.
