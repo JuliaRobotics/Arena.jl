@@ -1,6 +1,6 @@
-# TEMPORARY STATUS UPDATE (2Q2020)
+# STATUS UPDATE (2022Q3)
 
-This package will be reinvigorated soon, following updates to other upstream packages in the Caesar.jl ecosystem.
+This package will be reinvigorated based on the many improvements made to Makie.jl.
 
 # Arena.jl
 
