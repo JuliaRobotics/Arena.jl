@@ -38,8 +38,9 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 TransformUtils = "9b8138ad-1b09-5408-aa39-e87ed6d21b63"
 
 [compat]
-CoordinateTransformations = "0.6"
 Colors = "0.12"
+ColorTypes = "0.11"
+CoordinateTransformations = "0.6"
 FileIO = "1"
 MeshCat = "0.14"
 JSON2 = "0.3"
