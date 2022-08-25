@@ -38,6 +38,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 TransformUtils = "9b8138ad-1b09-5408-aa39-e87ed6d21b63"
 
 [compat]
+DocStringExtensions = "0.9"
 Caesar = "0.13"
 Colors = "0.12"
 ColorTypes = "0.11"
