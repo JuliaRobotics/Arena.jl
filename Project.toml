@@ -1,5 +1,6 @@
 name = "Arena"
 uuid = "53eacc40-fba4-5ad6-b4bb-526e51630e63"
+version = "0.1.0"
 
 [deps]
 Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
@@ -33,5 +34,13 @@ RoME = "91fb55c2-4c03-5a59-ba21-f4ea956187b8"
 Rotations = "6038ab10-8711-5258-84ad-4b1120ba62dc"
 Sockets = "6462fe0b-24de-5631-8697-dd941f90decc"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 TransformUtils = "9b8138ad-1b09-5408-aa39-e87ed6d21b63"
+
+[compat]
+julia = "1.6"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
