@@ -1,6 +1,7 @@
 name = "Arena"
 uuid = "53eacc40-fba4-5ad6-b4bb-526e51630e63"
-version = "0.1.0"
+desc = "Visualization tools for Caesar.jl related SLAM solutions"
+version = "0.3.0"
 
 [deps]
 Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
