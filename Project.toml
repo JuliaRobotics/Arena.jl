@@ -38,6 +38,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 TransformUtils = "9b8138ad-1b09-5408-aa39-e87ed6d21b63"
 
 [compat]
+Caesar = "0.13"
 julia = "1.6"
 
 [extras]
