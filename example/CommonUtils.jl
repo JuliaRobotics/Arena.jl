@@ -24,5 +24,5 @@ function plotPointCloud2D(pc::PointCloud)
   x = (s->s.data[1]).(pc.points)
   y = (s->s.data[2]).(pc.points)
 
-  Main.Gadfly.plot(x=x,y=y, Main.Gadfly.Geom.point)
+  Gadfly.plot(x=x,y=y, Main.Gadfly.Geom.point)
 end
