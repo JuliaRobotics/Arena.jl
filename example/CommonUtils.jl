@@ -20,7 +20,7 @@ function plotPointCloudPair(pca,pcb)
 end
 
 
-function plotPointCloud2D(pc::PointCloud)
+function plotPointCloud2D(pc::_PCL.PointCloud)
   x = (s->s.data[1]).(pc.points)
   y = (s->s.data[2]).(pc.points)
 
