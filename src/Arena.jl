@@ -1,32 +1,16 @@
 module Arena
 
+# using Colors
 using Caesar
+# const Caesar._PCL = _PCL
 # can switch to WGLMakie after https://github.com/SimonDanisch/JSServe.jl/issues/131
 using GLMakie
 
-# using ImageView, Images
-## moved to and remove from legacy/LegacyAPI.jl when restored
-# due to issue with ImageMagick and Pkg importing, the order is very sensitive here!
-# see https://github.com/JuliaIO/ImageMagick.jl/issues/142
-# using ImageMagick
-# using PlotUtils
-# using MeshIO, MeshCat
-# using LinearAlgebra
+# a lot of legacy code has been moved to the attic
 
-# using Rotations, CoordinateTransformations
-# using TransformUtils
-# using Graphs, NLsolve
-# using GeometryTypes, ColorTypes
-# using DocStringExtensions, ProgressMeter
-# # using CaesarLCMTypes
-# using Requires
-# using FileIO
-# using JSON
-# using Base64
-# const CTs = CoordinateTransformations
-# const TUs = TransformUtils
-include("legacy/LegacyAPI.jl")
+export plotPointCloud, plotPointCloudPair, plotPointCloud2D
+export plotGraphPointClouds
 
-
+include("services/PlotPointCloudMap.jl")
 
 end # module
