@@ -12,7 +12,7 @@ include(joinpath(@__DIR__, "CommonUtils.jl"))
 
 ##
 
-function alignPointCloudPairSliders(pc_fix, pc_mov)
+function alignPointCloudPairSlidersGeneric(pc_fix, pc_mov)
   vecX(pts) = (s->s.x).(pts)
   vecY(pts) = (s->s.y).(pts)
   vecZ(pts) = (s->s.z).(pts)
