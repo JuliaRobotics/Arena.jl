@@ -1,6 +1,31 @@
 
 
-function plotPointCloud(pca::Caesar._PCL.PointCloud; plotfnc=scatter, col=1, markersize=2)
+#fixed z color spread
+function colorsPointCloud(
+  pca::Caesar._PCL.PointCloud;
+  vecZ = (s->s.z).(pca.points),
+  bottom=-3.0,
+  top=7.0,
+)
+  scl = top / maximum(vecZ)
+  color = scl .* vecZ
+  # everything below bottom gets the same color
+  color[ color .< bottom ] .= bottom
+  color
+end
+
+
+
+function plotPointCloud(
+  pca::Caesar._PCL.PointCloud; 
+  plotfnc=scatter, 
+  col=-1,
+  bottom=-3.0,
+  top=7.0,
+  color = colorsPointCloud(pca;bottom,top),
+  colormap = ColorSchemes.gist_earth.colors,
+  markersize=2
+)
   vecX(pts) = (s->s.x).(pts)
   vecY(pts) = (s->s.y).(pts)
   vecZ(pts) = (s->s.z).(pts)
@@ -9,12 +34,17 @@ function plotPointCloud(pca::Caesar._PCL.PointCloud; plotfnc=scatter, col=1, mar
   Y = vecY(pca.points)
   Z = vecZ(pca.points)
 
-  plotfnc(X,Y,Z; color=[0;col*ones(length(Z)-1)], markersize)
+  plotfnc(
+    X,Y,Z; 
+    color, 
+    markersize,
+    colormap,
+  )
 end
 
 function plotPointCloudPair(pca,pcb)
-  pl = plotPointCloud(pca; plotfnc=scatter, col=-0.5)
-  plotPointCloud(pcb; plotfnc=scatter!, col=0.0)
+  pl = plotPointCloud(pca; plotfnc=scatter, bottom=100, top=101)
+  plotPointCloud(pcb; plotfnc=scatter!, bottom=-100, top=1000 )
   pl
 end
 
@@ -81,7 +111,7 @@ function plotGraphPointClouds(
         pc_map = cat(pc_map, wPC; reuse=true)
         -1
       end
-      plotPointCloud(wPC; plotfnc = scatter!, col)
+      plotPointCloud(wPC; plotfnc = scatter!) #, col)
     end
   end
 
