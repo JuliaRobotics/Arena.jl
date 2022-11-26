@@ -61,8 +61,8 @@ end
 
 function plotGraphPointClouds(
   dfg::AbstractDFG,
-  getpointcloud::Function; #(v)->getBlobPointCloudRegex(dfg, v, Regex("PCLPointCloud2"))
-  plotlist = (listVariables(dfg) |> sortDFG .|> string)
+  getpointcloud::Function = (v)->getDataPointCloud(dfg, v, Regex("PCLPointCloud2"));
+  varList = (listVariables(dfg) |> sortDFG .|> string)
 )
   pl = nothing
 
@@ -75,7 +75,7 @@ function plotGraphPointClouds(
   # ax = Axis(fig[1,1]) #Axis3(fig[1, 1], viewmode=:stretch)
 
   count = 0
-  for vl in plotlist
+  for vl in varList
     @show vl
     count += 1
     pc_ = getpointcloud(vl)
@@ -104,7 +104,7 @@ function plotGraphPointClouds(
       pc_map = deepcopy(wPC)
     else
       # col = -1*(count%2)
-      col = if vl == plotlist[end]
+      col = if vl == varList[end]
         pc_last = wPC
         0
       else
