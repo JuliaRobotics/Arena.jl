@@ -62,7 +62,8 @@ end
 function plotGraphPointClouds(
   dfg::AbstractDFG,
   getpointcloud::Function = (v)->getDataPointCloud(dfg, v, Regex("PCLPointCloud2"));
-  varList = (listVariables(dfg) |> sortDFG .|> string)
+  varList = (listVariables(dfg) |> sortDFG .|> string),
+  solveKey = :default
 )
   pl = nothing
 
@@ -75,6 +76,9 @@ function plotGraphPointClouds(
   # ax = Axis(fig[1,1]) #Axis3(fig[1, 1], viewmode=:stretch)
 
   count = 0
+  M = getManifold(Pose3)
+  ϵ0_ = MJL.identity_element(M)
+  ϵ0 = ArrayPartition(ϵ0_.parts...)
   for vl in varList
     @show vl
     count += 1
@@ -96,8 +100,10 @@ function plotGraphPointClouds(
       @warn "Skipping $vl which does not have solveKey :parametric"
       continue
     end
-    wPp = getSolverData(v, :parametric).val[1]
-    wPC = Caesar._PCL.apply(getManifold(Pose3), wPp, pc)
+    w_Cwp = calcPPE(v; solveKey).suggested
+    wPp = MJL.exp(M,ϵ0,MJL.hat(M,ϵ0,w_Cwp))
+    # wPp = getSolverData(v, solveKey).val[1]
+    wPC = Caesar._PCL.apply(M, wPp, pc)
 
     if pl isa Nothing
       pl = plotPointCloud(wPC; plotfnc = scatter, col=-1.0)
