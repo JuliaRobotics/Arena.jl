@@ -1,7 +1,14 @@
-# STATUS UPDATE (2022Q3)
+# Status
+
+## UPDATE (2022Q4)
+
+- Any attic code being reinvigorated should build against GeometryBasics and drop rpevious usage of GeometryTypes.
+- Only basic Point Cloud plotting is currently supported, see `plotPointCloud*` functions.
+- All previous code has been moved to the subfolder `attic`.
+
+## UPDATE (2022Q3)
 
 This package will be reinvigorated based on the many improvements made to Makie.jl.
-
 # Arena.jl
 
 Collection of 3D visualizations associated with the [Caesar.jl](http://www.github.com/JuliaRobotics/Caesar.jl.git) and [RoME.jl](http://www.github.com/JuliaRobotics/RoME.jl.git) robotic navigation packages.
