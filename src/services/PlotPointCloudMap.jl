@@ -50,11 +50,13 @@ end
 
 
 function plotPointCloud2D(pc::Caesar._PCL.PointCloud)
-  x = (s->s.data[1]).(pc.points)
-  y = (s->s.data[2]).(pc.points)
+  xy = (s->s.data[1:2]).(pc.points)
 
-  error("TODO, convert to Makie")
-  # Gadfly.plot(x=x,y=y, Main.Gadfly.Geom.point)
+  @cast xy_[i,d] := xy[i][d]
+
+  f = Figure()
+  pos = f[1, 1]
+  scatter(pos, xy_)
 end
 
 
