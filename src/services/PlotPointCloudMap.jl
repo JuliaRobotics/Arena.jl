@@ -63,7 +63,7 @@ end
 
 function plotGraphPointClouds(
   dfg::AbstractDFG,
-  getpointcloud::Function = (v)->getDataPointCloud(dfg, v, Regex("PCLPointCloud2"));
+  getpointcloud::Function = (v)->_PCL.getDataPointCloud(dfg, v, Regex("PCLPointCloud2"));
   varList = (listVariables(dfg) |> sortDFG .|> string),
   solveKey = :default
 )
