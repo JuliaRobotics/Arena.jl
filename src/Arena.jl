@@ -3,7 +3,7 @@ module Arena
 # using Colors
 import Manifolds as MJL
 using Caesar
-# const Caesar._PCL = _PCL
+const _PCL = Caesar._PCL
 # can switch to WGLMakie after https://github.com/SimonDanisch/JSServe.jl/issues/131
 using GLMakie
 using ColorSchemes
