@@ -7,10 +7,12 @@ using Caesar
 # can switch to WGLMakie after https://github.com/SimonDanisch/JSServe.jl/issues/131
 using GLMakie
 using ColorSchemes
+using TensorCast
 
 # a lot of legacy code has been moved to the attic
 
-export plotPointCloud, plotPointCloudPair, plotPointCloud2D
+export plotPointCloud2D
+export plotPointCloud, plotPointCloudPair
 export plotGraphPointClouds
 
 include("services/PlotPointCloudMap.jl")
