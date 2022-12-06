@@ -11,10 +11,7 @@ using TensorCast
 
 # a lot of legacy code has been moved to the attic
 
-export plotPointCloud2D
-export plotPointCloud, plotPointCloudPair
-export plotGraphPointClouds
-
+include("Exports.jl")
 include("services/PlotPointCloudMap.jl")
 
 end # module
