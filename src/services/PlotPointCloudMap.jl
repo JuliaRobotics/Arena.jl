@@ -24,7 +24,8 @@ function plotPointCloud(
   top=7.0,
   color = colorsPointCloud(pca;bottom,top),
   colormap = ColorSchemes.gist_earth.colors,
-  markersize=2
+  markersize=2,
+  ax=nothing
 )
   vecX(pts) = (s->s.x).(pts)
   vecY(pts) = (s->s.y).(pts)
@@ -35,6 +36,7 @@ function plotPointCloud(
   Z = vecZ(pca.points)
 
   plotfnc(
+    (isnothing(ax) ? () : (ax,))...,
     X,Y,Z; 
     color, 
     markersize,
@@ -63,7 +65,7 @@ end
 
 function plotGraphPointClouds(
   dfg::AbstractDFG,
-  getpointcloud::Function = (v)->_PCL.getDataPointCloud(dfg, v, Regex("PCLPointCloud2"));
+  getpointcloud::Function = (v)->_PCL.getDataPointCloud(dfg, v, Regex("PCLPointCloud2"); checkhash=false);
   varList = (listVariables(dfg) |> sortDFG .|> string),
   solveKey = :default
 )
@@ -74,7 +76,13 @@ function plotGraphPointClouds(
   pc_map = nothing
   pc_last = nothing
 
-  # fig = Figure()
+  # attempting to fix #107
+  # f = Figure()
+  # ERROR: `Makie.convert_arguments` for the plot type MakieCore.Scatter{Tuple{Makie.Axis3, Vector{Float32}, Vector{Float32}, Vector{Float32}}} and its conversion trait MakieCore.PointBased() was unsuccessful.
+  # ax = Axis3(
+  #   f[1, 1],
+  #   title = string(solveKey)
+  # )
   # ax = Axis(fig[1,1]) #Axis3(fig[1, 1], viewmode=:stretch)
 
   count = 0
@@ -108,7 +116,7 @@ function plotGraphPointClouds(
     wPC = Caesar._PCL.apply(M, wPp, pc)
 
     if pl isa Nothing
-      pl = plotPointCloud(wPC; plotfnc = scatter, col=-1.0)
+      pl = plotPointCloud(wPC; plotfnc = scatter, col=-1.0, ax=nothing)
       pc_map = deepcopy(wPC)
     else
       # col = -1*(count%2)
