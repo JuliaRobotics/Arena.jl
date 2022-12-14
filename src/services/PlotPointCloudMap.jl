@@ -133,3 +133,43 @@ function plotGraphPointClouds(
 
   return pl, pc_map, pc_last
 end
+
+
+function plotBoundingBox!(
+  ax,
+  BB::_PCL.AbstractBoundingBox,
+  color=:red
+)
+  _line3d!(ax, a, b) = lines!(ax, [b[1];a[1]], [b[2];a[2]], [b[3];a[3]]; color  )
+
+  corners = _PCL.getCorners(BB)
+  
+  # https://math.stackexchange.com/questions/1472049/check-if-a-point-is-inside-a-rectangular-shaped-area-3d
+  _line3d!(ax, corners[1], corners[2])
+  _line3d!(ax, corners[1], corners[4])
+  _line3d!(ax, corners[2], corners[3])
+  _line3d!(ax, corners[4], corners[3])
+
+  _line3d!(ax, corners[5], corners[6])
+  _line3d!(ax, corners[5], corners[8])
+  _line3d!(ax, corners[6], corners[7])
+  _line3d!(ax, corners[8], corners[7])
+
+  _line3d!(ax, corners[1], corners[5])
+  _line3d!(ax, corners[2], corners[6])
+  _line3d!(ax, corners[3], corners[7])
+  _line3d!(ax, corners[4], corners[8])
+
+  nothing
+end
+
+function plotBoundingBox(
+  BB::_PCL.AbstractBoundingBox,
+)
+  # x,y,zz = makeWireframeHyperRectangle(BB)
+  # wireframe(x,y,zz)
+  fig = Figure()
+  ax = Axis3(fig[1,1])
+  plotBoundingBox!(ax, BB)
+  fig
+end
