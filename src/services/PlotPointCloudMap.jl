@@ -3,7 +3,8 @@
 #fixed z color spread
 function colorsPointCloud(
   pca::Caesar._PCL.PointCloud;
-  vecZ = (s->s.z).(pca.points),
+  stride::Int=1,
+  vecZ = (s->s.z).(pca.points[1:stride:end]),
   bottom=-3.0,
   top=7.0,
 )
@@ -22,18 +23,20 @@ function plotPointCloud(
   col=-1,
   bottom=-3.0,
   top=7.0,
-  color = colorsPointCloud(pca;bottom,top),
+  stride::Int = 1,
+  color = colorsPointCloud(pca;bottom,top,stride),
   colormap = ColorSchemes.gist_earth.colors,
   markersize=2,
   ax=nothing
 )
+  len = length(pca)
   vecX(pts) = (s->s.x).(pts)
   vecY(pts) = (s->s.y).(pts)
   vecZ(pts) = (s->s.z).(pts)
 
-  X = vecX(pca.points)
-  Y = vecY(pca.points)
-  Z = vecZ(pca.points)
+  X = vecX(pca.points[1:stride:len])
+  Y = vecY(pca.points[1:stride:len])
+  Z = vecZ(pca.points[1:stride:len])
 
   plotfnc(
     (isnothing(ax) ? () : (ax,))...,
@@ -42,6 +45,19 @@ function plotPointCloud(
     markersize,
     colormap,
   )
+end
+
+function plotPointCloud(
+  arr::AbstractVector{<:_PCL.PointCloud},
+  w...;
+  kw...
+)
+  #
+  pc = deepcopy(arr[1])
+  for c in arr[2:end]
+    _PCL.cat(pc, c; reuse=true)
+  end
+  plotPointCloud(pc, w...; kw...)
 end
 
 function plotPointCloudPair(pca,pcb)
@@ -68,7 +84,8 @@ function plotGraphPointClouds(
   getpointcloud::Function = (v)->_PCL.getDataPointCloud(dfg, v, Regex("PCLPointCloud2"); checkhash=false);
   varList = (listVariables(dfg) |> sortDFG .|> string),
   solveKey = :default,
-  ax=nothing
+  ax=nothing,
+  stride::Int = 1,
 )
   pl = nothing
 
@@ -119,7 +136,7 @@ function plotGraphPointClouds(
     
     
     if isnothing(pl) && isnothing(ax)
-      pl = plotPointCloud(wPC; plotfnc = scatter, col=-1.0, ax)
+      pl = plotPointCloud(wPC; plotfnc = scatter, col=-1.0, ax, stride)
       # pc_map = deepcopy(wPC)
     else
       # col = -1*(count%2)
@@ -130,7 +147,7 @@ function plotGraphPointClouds(
         # pc_map = cat(pc_map, wPC; reuse=true)
         -1
       end
-      plotPointCloud(wPC; plotfnc = scatter!, ax) #, col)
+      plotPointCloud(wPC; plotfnc = scatter!, ax, stride) #, col)
     end
     cat(pc_map, wPC; reuse=true)
   end
