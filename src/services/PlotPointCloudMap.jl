@@ -27,7 +27,8 @@ function plotPointCloud(
   color = colorsPointCloud(pca;bottom,top,stride),
   colormap = ColorSchemes.gist_earth.colors,
   markersize=2,
-  ax=nothing
+  ax=nothing,
+  # show_axis = false
 )
   len = length(pca)
   vecX(pts) = (s->s.x).(pts)
@@ -78,39 +79,29 @@ function plotPointCloud2D(pc::Caesar._PCL.PointCloud)
 end
 
 
-
 function plotGraphPointClouds(
   dfg::AbstractDFG,
   getpointcloud::Function = (v)->_PCL.getDataPointCloud(dfg, v, Regex("PCLPointCloud2"); checkhash=false);
   varList = (listVariables(dfg) |> sortDFG .|> string),
   solveKey = :default,
-  ax=nothing,
+  fig = Figure(),
+  ax = LScene(fig[1, 1]),
   stride::Int = 1,
 )
   pl = nothing
 
   #
 
-  pc_map = nothing
-  pc_last = nothing
-
   # attempting to fix #107
   # f = Figure()
-  # ERROR: `Makie.convert_arguments` for the plot type MakieCore.Scatter{Tuple{Makie.Axis3, Vector{Float32}, Vector{Float32}, Vector{Float32}}} and its conversion trait MakieCore.PointBased() was unsuccessful.
-  # ax = Axis3(
-  #   f[1, 1],
-  #   title = string(solveKey)
-  # )
-  # ax = Axis(fig[1,1]) #Axis3(fig[1, 1], viewmode=:stretch)
+  # ax = LScene(fig[1, 1])
 
-  count = 0
   M = getManifold(Pose3)
-  ϵ0_ = MJL.identity_element(M)
-  ϵ0 = ArrayPartition(ϵ0_.parts...)
+  ϵ0 = ArrayPartition(SVector(0,0,0.),SMatrix{3,3}(1,0,0,0,1,0,0,0,1.)) # MJL.identity_element(M)
+  # ϵ0 = ArrayPartition(ϵ0_.parts...)
+  pc_last = _PCL.PointCloud()
   pc_map = _PCL.PointCloud()
   for vl in varList
-    @show vl
-    count += 1
     pc_ = getpointcloud(vl)
     if pc_ isa Nothing
       @warn "Skipping variable without point cloud" vl
@@ -139,20 +130,15 @@ function plotGraphPointClouds(
       pl = plotPointCloud(wPC; plotfnc = scatter, col=-1.0, ax, stride)
       # pc_map = deepcopy(wPC)
     else
-      # col = -1*(count%2)
-      col = if vl == varList[end]
+      if vl == varList[end]
         pc_last = wPC
-        0
-      else
-        # pc_map = cat(pc_map, wPC; reuse=true)
-        -1
       end
-      plotPointCloud(wPC; plotfnc = scatter!, ax, stride) #, col)
+      plotPointCloud(wPC; plotfnc = scatter!, ax, stride)
     end
     cat(pc_map, wPC; reuse=true)
   end
 
-  return pl, pc_map, pc_last
+  return fig, pc_map, pc_last
 end
 
 
