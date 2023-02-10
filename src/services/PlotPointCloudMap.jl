@@ -87,6 +87,8 @@ function plotGraphPointClouds(
   fig = Figure(),
   ax = LScene(fig[1, 1]),
   stride::Int = 1,
+  minrange::Real = 0.0,
+  maxrange::Real = 9999.0
 )
   pl = nothing
 
@@ -108,12 +110,9 @@ function plotGraphPointClouds(
       continue
     end
     pc = Caesar._PCL.PointCloud(pc_)
-    
-    # pts_a = (s->[s.x;s.y;s.z]).(pc.points)
-
-    # minrange = 1
-    # maxrange = 50
-    # pts_a = Caesar._PCL._filterMinRange(pts_a, minrange, maxrange)
+    pts_a = (s->[s.x;s.y;s.z]).(pc.points)
+    pts_a = Caesar._PCL._filterMinRange(pts_a, minrange, maxrange)
+    pc = Caesar._PCL.PointCloud(pts_a)
 
     v = getVariable(dfg, Symbol(vl))
     if !(:parametric in listSolveKeys(v))
