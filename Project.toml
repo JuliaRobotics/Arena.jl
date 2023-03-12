@@ -14,7 +14,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 TensorCast = "02d47bb6-7ce6-556a-be16-bb1710789e2b"
 
 [compat]
-Caesar = "0.14"
+Caesar = "0.14, 0.15"
 ColorSchemes = "3"
 DocStringExtensions = "0.8, 0.9"
 GLMakie = "0.7, 0.8"
