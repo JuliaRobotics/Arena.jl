@@ -16,5 +16,6 @@ using StaticArrays
 
 include("Exports.jl")
 include("services/PlotPointCloudMap.jl")
+include("services/PlotBoundingBox.jl")
 
 end # module
