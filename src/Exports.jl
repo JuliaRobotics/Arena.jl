@@ -5,3 +5,5 @@ export plotGraphPointClouds
 export plotBoundingBox, plotBoundingBox!
 
 export makeWireframeHyperRectangle,calcBoxWireframe,plotBoundingBoxHack,plotBoundingBoxHack!,plotBoundingBoxTool,plotWireframeHyperRectangle
+
+export plotBlobsImageTracks!
