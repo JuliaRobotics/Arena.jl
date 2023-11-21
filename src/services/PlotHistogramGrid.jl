@@ -90,6 +90,23 @@ end
 
 
 function getRange(
+  P::Union{<:ManifoldKernelDensity,<:MvNormal};
+  extend::Float64=0.2,
+)
+  # Reuse a legacy method
+  axes = getRangeCartesian(P; extend)
+  
+  coords = Dict{Symbol, Float64}()
+
+  coords[:xmin] = axes[1,1]
+  coords[:xmax] = axes[1,2]
+  coords[:ymin] = axes[2,1]
+  coords[:ymax] = axes[2,2]
+
+  return coords
+end
+
+function getRange(
   dfg::AbstractDFG,
   regexFilter::Union{Nothing, Regex}=nothing;
   varList = listVariables(dfg, regexFilter),
@@ -149,57 +166,84 @@ function histBelief2D!(
 end
 
 function histBelief2D(
-  P::ManifoldKernelDensity
-)
+  PP::AbstractVector{T};
+  N::Integer = 100,
+  verbose::Bool=true,
+  extend::Real=0.2,
+) where {T<:Union{<:ManifoldKernelDensity,<:MvNormal}}
   #
-
-end
-
-
-function histGrid(
-  dfg::AbstractDFG;
-  varList = listVariables(dfg),
-  factorList = Symbol[],
-  N = 100,
-  verbose::Bool=true
-)
-  #
-  coords = getRange(dfg; varList, factorList)
-
-  img = zeros(N,N)
-
-  _accumulateDens!(img, i, x, j, y, _v) = begin
-    P = getBelief(getVariable(dfg,_v))
-    histBelief2D!(img,i,x,j,y,P)
-    # P_ = _makeDens2D(P)
-    # roi = _getBeliefRange(P_; extend=0.3)
-    # if (roi[1,1] <= x <= roi[1,2]) && (roi[2,1] <= y <= roi[2,2])
-    #   ev[1,1] = x
-    #   ev[2,1] = y
-    #   img[i,j] += P_(ev)[1]
-    # end
-    # nothing
+  coords = getRange(PP[2]; extend)
+  for P in PP
+    _c = getRange(PP[2]; extend)
+    coords[:xmin] = _c[:xmin] < coords[:xmin] ? _c[:xmin] : coords[:xmin]
+    coords[:xmax] = coords[:xmax] < _c[:xmax] ? _c[:xmax] : coords[:xmax]
+    coords[:ymin] = _c[:ymin] < coords[:ymin] ? _c[:ymin] : coords[:ymin]
+    coords[:ymax] = coords[:ymax] < _c[:ymax] ? _c[:ymax] : coords[:ymax]
   end
-
-  NNv = N*N*length(varList)
-  verbose && @info("# hist tasks = $NNv")
-  p = Progress(NNv; dt=1, desc="computing variable's histogram")
-  tasks = Vector{Task}(undef, NNv)
+  img = zeros(N,N)
+  
+  NN = N*N*length(PP)
+  p = if verbose
+    Progress(NN; dt=1, desc="computing belief histogram")
+  end
+  tasks = Vector{Task}(undef, NN)
   n = 0
-  # P in getBelief.(getVariable.(dfg,varList))
-  for v in varList, 
+
+  for _P in PP,
       (i,x) in enumerate(range(coords[:xmin],coords[:xmax];length=N)), 
       (j,y) in enumerate(range(coords[:ymin],coords[:ymax];length=N))
     #
     n += 1
     tasks[n] = Threads.@spawn begin
-      _accumulateDens!(img, $i, $x, $j, $y, $v)
-      next!(p)
+      histBelief2D!(img, $i, $x, $j, $y, $_P)
+      verbose && next!(p)
     end
   end
 
   wait.(tasks)
-  finish!(p)
+  verbose && finish!(p)
+
+  return img, coords
+end
+
+
+function histBeliefs(
+  dfg::AbstractDFG;
+  varList = listVariables(dfg),
+  factorList = Symbol[],
+  N::Integer = 100,
+  verbose::Bool=true
+)
+  #
+  # coords = getRange(dfg; varList, factorList)
+  # img = zeros(N,N)
+
+  # _accumulateDens!(img, i, x, j, y, _v) = begin
+  #   P = getBelief(getVariable(dfg,_v))
+  #   histBelief2D!(img,i,x,j,y,P)
+  # end
+
+  NNv = N*N*length(varList)
+  verbose && @info("# hist tasks = $NNv")
+  # p = Progress(NNv; dt=1, desc="computing variable's histogram")
+  # tasks = Vector{Task}(undef, NNv)
+  # n = 0
+  PP = getBelief.(getVariable.(dfg,varList))
+  img, coords = histBelief2D(PP; N, verbose)
+  
+  # for v in varList, 
+  #     (i,x) in enumerate(range(coords[:xmin],coords[:xmax];length=N)), 
+  #     (j,y) in enumerate(range(coords[:ymin],coords[:ymax];length=N))
+  #   #
+  #   n += 1
+  #   tasks[n] = Threads.@spawn begin
+  #     _accumulateDens!(img, $i, $x, $j, $y, $v)
+  #     next!(p)
+  #   end
+  # end
+
+  # wait.(tasks)
+  # finish!(p)
 
   @showprogress desc="computing factor's histogram" dt=1 for P in (getFactorType.(dfg,factorList) .|> s->s.Z), 
                                                     (i,x) in enumerate(range(coords[:xmin],coords[:xmax];length=N)), 
@@ -207,6 +251,7 @@ function histGrid(
     P__ = _makeDens2D(P)
     roi = _getBeliefRange(P__; extend=0.3)
     if (roi[1,1] <= x <= roi[1,2]) && (roi[2,1] <= y <= roi[2,2])
+      ev = zeros(2,1)
       ev[1,1] = x
       ev[2,1] = y
       img[i,j] += P__(ev)
@@ -229,7 +274,7 @@ function plotSLAM2D_Histogram(
   ylabel="y-axis",
 )
   verbose && @show(varList)
-  img,coords = histGrid(dfg;varList, N, verbose)
+  img,coords = histBeliefs(dfg;varList, N, verbose)
   xrg = range(coords[:xmin],coords[:xmax];length=N)
   yrg = range(coords[:ymin],coords[:ymax];length=N)
   image(
