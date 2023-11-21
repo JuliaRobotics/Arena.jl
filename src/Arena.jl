@@ -9,6 +9,7 @@ const _PCL = Caesar._PCL
 # can switch to WGLMakie after https://github.com/SimonDanisch/JSServe.jl/issues/131
 using GLMakie
 using ColorSchemes
+using Colors
 using TensorCast
 using StaticArrays
 using ProgressMeter

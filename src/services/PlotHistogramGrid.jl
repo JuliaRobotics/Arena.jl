@@ -98,6 +98,7 @@ function histGrid(
   varList = listVariables(dfg),
   factorList = Symbol[],
   N = 100,
+  verbose::Bool=true
 )
   #
   coords = getRange(dfg; varList, factorList)
@@ -121,17 +122,37 @@ function histGrid(
   _getBeliefRange(s::ManifoldKernelDensity; extend=0.1) = getKDERange(s;extend)
   _getBeliefRange(s::MvNormal; extend=0.1) = [(s.μ[1]-3*s.Σ[1,1]) (s.μ[1]+3*s.Σ[1,1]); (s.μ[2]-3*s.Σ[2,2]) (s.μ[2]+3*s.Σ[2,2])]
 
-  @showprogress desc="computing variable's histogram" dt=1 for P in getBelief.(getVariable.(dfg,varList)), 
-                                                    (i,x) in enumerate(range(coords[:xmin],coords[:xmax];length=N)), 
-                                                    (j,y) in enumerate(range(coords[:ymin],coords[:ymax];length=N))
-    P__ = _makeDens2D(P)
-    roi = _getBeliefRange(P__; extend=0.3)
+  _accumulateDens!(img, i, x, j, y, _v) = begin
+    P = getBelief(getVariable(dfg,_v))
+    P_ = _makeDens2D(P)
+    roi = _getBeliefRange(P_; extend=0.3)
     if (roi[1,1] <= x <= roi[1,2]) && (roi[2,1] <= y <= roi[2,2])
       ev[1,1] = x
       ev[2,1] = y
-      img[i,j] += P__(ev)[1]
+      img[i,j] += P_(ev)[1]
+    end
+    nothing
+  end
+
+  NNv = N*N*length(varList)
+  verbose && @info("# hist tasks = $NNv")
+  p = Progress(NNv; dt=1, desc="computing variable's histogram")
+  tasks = Vector{Task}(undef, NNv)
+  n = 0
+  # P in getBelief.(getVariable.(dfg,varList))
+  for v in varList, 
+      (i,x) in enumerate(range(coords[:xmin],coords[:xmax];length=N)), 
+      (j,y) in enumerate(range(coords[:ymin],coords[:ymax];length=N))
+    #
+    n += 1
+    tasks[n] = Threads.@spawn begin
+      _accumulateDens!(img, $i, $x, $j, $y, $v)
+      next!(p)
     end
   end
+
+  wait.(tasks)
+  finish!(p)
 
   @showprogress desc="computing factor's histogram" dt=1 for P in (getFactorType.(dfg,factorList) .|> s->s.Z), 
                                                     (i,x) in enumerate(range(coords[:xmin],coords[:xmax];length=N)), 
@@ -161,7 +182,7 @@ function plotSLAM2D_Histogram(
   ylabel="y-axis",
 )
   verbose && @show(varList)
-  img,coords = histGrid(dfg;varList,N)
+  img,coords = histGrid(dfg;varList, N, verbose)
   xrg = range(coords[:xmin],coords[:xmax];length=N)
   yrg = range(coords[:ymin],coords[:ymax];length=N)
   image(
