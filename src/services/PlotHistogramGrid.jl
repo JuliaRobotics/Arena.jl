@@ -165,7 +165,7 @@ function histBelief2D!(
   nothing
 end
 
-function histBelief2D(
+function histBeliefs2D(
   PP::AbstractVector{T};
   N::Integer = 100,
   verbose::Bool=true,
@@ -207,7 +207,7 @@ function histBelief2D(
 end
 
 
-function histBeliefs(
+function histBeliefs2D(
   dfg::AbstractDFG;
   varList = listVariables(dfg),
   factorList = Symbol[],
@@ -215,13 +215,6 @@ function histBeliefs(
   verbose::Bool=true
 )
   #
-  # coords = getRange(dfg; varList, factorList)
-  # img = zeros(N,N)
-
-  # _accumulateDens!(img, i, x, j, y, _v) = begin
-  #   P = getBelief(getVariable(dfg,_v))
-  #   histBelief2D!(img,i,x,j,y,P)
-  # end
 
   NNv = N*N*length(varList)
   verbose && @info("# hist tasks = $NNv")
@@ -229,21 +222,7 @@ function histBeliefs(
   # tasks = Vector{Task}(undef, NNv)
   # n = 0
   PP = getBelief.(getVariable.(dfg,varList))
-  img, coords = histBelief2D(PP; N, verbose)
-  
-  # for v in varList, 
-  #     (i,x) in enumerate(range(coords[:xmin],coords[:xmax];length=N)), 
-  #     (j,y) in enumerate(range(coords[:ymin],coords[:ymax];length=N))
-  #   #
-  #   n += 1
-  #   tasks[n] = Threads.@spawn begin
-  #     _accumulateDens!(img, $i, $x, $j, $y, $v)
-  #     next!(p)
-  #   end
-  # end
-
-  # wait.(tasks)
-  # finish!(p)
+  img, coords = histBeliefs2D(PP; N, verbose)
 
   @showprogress desc="computing factor's histogram" dt=1 for P in (getFactorType.(dfg,factorList) .|> s->s.Z), 
                                                     (i,x) in enumerate(range(coords[:xmin],coords[:xmax];length=N)), 
@@ -262,6 +241,41 @@ function histBeliefs(
 end
 
 
+function plotBeliefs_Histogram(
+  PP::AbstractVector{T};
+  N::Integer=200,
+  verbose::Bool=true,
+  colormap=:dense, #:viridis,
+  colorscale=sqrt, #identity, #log,
+  title="Histogram, N=$N, of $(length(PP)) beliefs",
+  xlabel="x-axis",
+  ylabel="y-axis",
+) where {T<: Union{<:ManifoldKernelDensity, <:MvNormal}}
+  #
+  img,coords = histBeliefs2D(PP; N, verbose)
+  xrg = range(coords[:xmin],coords[:xmax];length=N)
+  yrg = range(coords[:ymin],coords[:ymax];length=N)
+  image(
+    xrg, 
+    yrg, 
+    img; 
+    colorscale, 
+    colormap,
+    axis=(;title,xlabel,ylabel)
+  )
+end
+
+plotBelief_Histogram(
+  P::T,
+  w...;
+  kw...
+) where {T<:Union{<:ManifoldKernelDensity, <:MvNormal}} = plotBeliefs_Histogram(
+  T[P;],
+  w...;
+  kw...
+)
+
+
 function plotSLAM2D_Histogram(
   dfg::AbstractDFG;
   varList::AbstractVector{Symbol}=listVariables(dfg),
@@ -274,7 +288,7 @@ function plotSLAM2D_Histogram(
   ylabel="y-axis",
 )
   verbose && @show(varList)
-  img,coords = histBeliefs(dfg;varList, N, verbose)
+  img,coords = histBeliefs2D(dfg;varList, N, verbose)
   xrg = range(coords[:xmin],coords[:xmax];length=N)
   yrg = range(coords[:ymin],coords[:ymax];length=N)
   image(

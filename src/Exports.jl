@@ -8,4 +8,4 @@ export makeWireframeHyperRectangle,calcBoxWireframe,plotBoundingBoxHack,plotBoun
 
 export plotBlobsImageTracks!
 
-export plotSLAM2D_Histogram
+export plotSLAM2D_Histogram, plotBeliefs_Histogram, plotBelief_Histogram
