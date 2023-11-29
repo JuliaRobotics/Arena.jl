@@ -1,5 +1,7 @@
 # plotting tools for fields in factor graphs
 
+const EMPTY_AXES_DICT = Dict{Symbol, Float64}(:xmin=>99999999,:xmax=>-99999999,:ymin=>99999999,:ymax=>-99999999)
+
 
 _getBeliefRange(s::ManifoldKernelDensity; extend=0.1) = getKDERange(s;extend)
 _getBeliefRange(s::MvNormal; extend=0.1) = [(s.μ[1]-3*s.Σ[1,1]) (s.μ[1]+3*s.Σ[1,1]); (s.μ[2]-3*s.Σ[2,2]) (s.μ[2]+3*s.Σ[2,2])]
@@ -133,16 +135,20 @@ function getRange(
 end
 
 
-function _makeDens2D(_P::ManifoldKernelDensity)
+function _makeDens2D(
+  _P::ManifoldKernelDensity
+)
   P_ = marginal(_P,[1;2])
   P__ = manikde!(
-    Position2, #getManifold(P_),
+    Position2, # TODO, do better than just TranslationGroup(2)
     getPoints(P_,true),
-    bw=getBW(P_)
+    bw=getBW(P_)[:,1]
   )
   P__
 end
-function _makeDens2D(_P::MvNormal)
+function _makeDens2D(
+  _P::MvNormal
+)
   s->pdf(MvNormal(_P.μ[1:2], _P.Σ[1:2,1:2]),s[:])
 end
 
@@ -152,7 +158,7 @@ function histBelief2D!(
   x::Real, 
   j::Integer, 
   y::Real, 
-  P
+  P::Union{<:ManifoldKernelDensity, <:MvNormal}
 )
   P_ = _makeDens2D(P)
   roi = _getBeliefRange(P_; extend=0.3)
@@ -165,22 +171,22 @@ function histBelief2D!(
   nothing
 end
 
-function histBeliefs2D(
+function histBeliefs2D!(
   PP::AbstractVector{T};
   N::Integer = 100,
   verbose::Bool=true,
   extend::Real=0.2,
+  img::AbstractMatrix = zeros(N,N),
+  coords = 0 < length(PP) ? getRange(PP[1]; extend) : EMPTY_AXES_DICT,
 ) where {T<:Union{<:ManifoldKernelDensity,<:MvNormal}}
   #
-  coords = getRange(PP[2]; extend)
   for P in PP
-    _c = getRange(PP[2]; extend)
+    _c = getRange(P; extend)
     coords[:xmin] = _c[:xmin] < coords[:xmin] ? _c[:xmin] : coords[:xmin]
     coords[:xmax] = coords[:xmax] < _c[:xmax] ? _c[:xmax] : coords[:xmax]
     coords[:ymin] = _c[:ymin] < coords[:ymin] ? _c[:ymin] : coords[:ymin]
     coords[:ymax] = coords[:ymax] < _c[:ymax] ? _c[:ymax] : coords[:ymax]
   end
-  img = zeros(N,N)
   
   NN = N*N*length(PP)
   p = if verbose
@@ -198,6 +204,7 @@ function histBeliefs2D(
       histBelief2D!(img, $i, $x, $j, $y, $_P)
       verbose && next!(p)
     end
+    # histBelief2D!(img, i, x, j, y, _P) # non threaded version
   end
 
   wait.(tasks)
@@ -206,6 +213,14 @@ function histBeliefs2D(
   return img, coords
 end
 
+histBeliefs2D!(
+  PP::AbstractVector;
+  N::Integer = 100,
+  verbose::Bool=true,
+  extend::Real=0.2,
+  img::AbstractMatrix = zeros(N,N),
+  coords::Dict{Symbol, Float64} = EMPTY_AXES_DICT,
+) = img, coords
 
 function histBeliefs2D(
   dfg::AbstractDFG;
@@ -222,26 +237,28 @@ function histBeliefs2D(
   # tasks = Vector{Task}(undef, NNv)
   # n = 0
   PP = getBelief.(getVariable.(dfg,varList))
-  img, coords = histBeliefs2D(PP; N, verbose)
+  img, coords = histBeliefs2D!(PP; N, verbose)
 
-  @showprogress desc="computing factor's histogram" dt=1 for P in (getFactorType.(dfg,factorList) .|> s->s.Z), 
-                                                    (i,x) in enumerate(range(coords[:xmin],coords[:xmax];length=N)), 
-                                                    (j,y) in enumerate(range(coords[:ymin],coords[:ymax];length=N))
-    P__ = _makeDens2D(P)
-    roi = _getBeliefRange(P__; extend=0.3)
-    if (roi[1,1] <= x <= roi[1,2]) && (roi[2,1] <= y <= roi[2,2])
-      ev = zeros(2,1)
-      ev[1,1] = x
-      ev[2,1] = y
-      img[i,j] += P__(ev)
-    end
-  end
+  P2 = (getFactorType.(dfg,factorList) .|> s->s.Z)
+  img, coords = histBeliefs2D!(P2; N, verbose, img, coords)
+  # @showprogress desc="computing factor's histogram" dt=1 for 
+  #                                                   (i,x) in enumerate(range(coords[:xmin],coords[:xmax];length=N)), 
+  #                                                   (j,y) in enumerate(range(coords[:ymin],coords[:ymax];length=N))
+  #   P__ = _makeDens2D(P)
+  #   roi = _getBeliefRange(P__; extend=0.3)
+  #   if (roi[1,1] <= x <= roi[1,2]) && (roi[2,1] <= y <= roi[2,2])
+  #     ev = zeros(2,1)
+  #     ev[1,1] = x
+  #     ev[2,1] = y
+  #     img[i,j] += P__(ev)
+  #   end
+  # end
 
   return img, coords
 end
 
 
-function plotBeliefs_Histogram(
+function plotBelief_Histogram(
   PP::AbstractVector{T};
   N::Integer=200,
   verbose::Bool=true,
@@ -265,6 +282,8 @@ function plotBeliefs_Histogram(
   )
 end
 
+const plotBeliefs_Histogram(w...;kw...) = plotBelief_Histogram(w...;kw...)
+
 plotBelief_Histogram(
   P::T,
   w...;
@@ -279,6 +298,7 @@ plotBelief_Histogram(
 function plotSLAM2D_Histogram(
   dfg::AbstractDFG;
   varList::AbstractVector{Symbol}=listVariables(dfg),
+  factorList = Symbol[],
   N::Integer=200,
   verbose::Bool=true,
   colormap=:dense, #:viridis,
@@ -288,7 +308,7 @@ function plotSLAM2D_Histogram(
   ylabel="y-axis",
 )
   verbose && @show(varList)
-  img,coords = histBeliefs2D(dfg;varList, N, verbose)
+  img,coords = histBeliefs2D(dfg;varList, factorList, N, verbose)
   xrg = range(coords[:xmin],coords[:xmax];length=N)
   yrg = range(coords[:ymin],coords[:ymax];length=N)
   image(
