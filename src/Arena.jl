@@ -9,8 +9,12 @@ const _PCL = Caesar._PCL
 # can switch to WGLMakie after https://github.com/SimonDanisch/JSServe.jl/issues/131
 using GLMakie
 using ColorSchemes
+using Colors
 using TensorCast
 using StaticArrays
+using ProgressMeter
+using DocStringExtensions
+
 
 # a lot of legacy code has been moved to the attic
 
@@ -18,5 +22,6 @@ include("Exports.jl")
 include("services/PlotPointCloudMap.jl")
 include("services/PlotBoundingBox.jl")
 include("services/PlotFeatureTracks.jl")
+include("services/PlotHistogramGrid.jl")
 
 end # module
