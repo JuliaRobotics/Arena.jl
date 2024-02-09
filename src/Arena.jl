@@ -7,7 +7,10 @@ using Caesar
 # import Caesar._PCL as _PCL
 const _PCL = Caesar._PCL
 # can switch to WGLMakie after https://github.com/SimonDanisch/JSServe.jl/issues/131
-using GLMakie
+# using GLMakie
+#TODO allow switching backends using GLMakie #GLMakie.activate!()
+using CairoMakie
+
 using ColorSchemes
 using Colors
 using TensorCast
