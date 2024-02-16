@@ -3,6 +3,10 @@ module Arena
 # using Colors
 import Manifolds as MJL
 import GeometryBasics as GeoB
+
+using DistributedFactorGraphs
+using RoME
+#TODO Caesar should be a package extention.
 # using Caesar
 # import Caesar._PCL as _PCL
 # const _PCL = Caesar._PCL
@@ -24,7 +28,7 @@ using DocStringExtensions
 # include("Exports.jl")
 # include("services/PlotPointCloudMap.jl")
 # include("services/PlotBoundingBox.jl")
-# include("services/PlotFeatureTracks.jl")
-# include("services/PlotHistogramGrid.jl")
+include("services/PlotFeatureTracks.jl")
+include("services/PlotHistogramGrid.jl")
 
 end # module
