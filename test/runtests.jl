@@ -11,9 +11,9 @@ using Test
 using Aqua
 
 @testset "Arena.jl" begin
-    # @testset "Code quality (Aqua.jl)" begin
-    #     Aqua.test_all(Arena)
-    # end
+    @testset "Code quality (Aqua.jl)" begin
+        Aqua.test_all(Arena; ambiguities=(broken=true,))
+    end
     
     # include("testBasicAnimations.jl")
 
