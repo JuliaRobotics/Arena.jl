@@ -4,8 +4,8 @@ desc = "Visualization tools for Caesar.jl related SLAM solutions"
 version = "0.1.0"
 
 [deps]
-Caesar = "62eebf14-49bc-5f46-9df9-f7b7ef379406"
-CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+# Caesar = "62eebf14-49bc-5f46-9df9-f7b7ef379406"
+# CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
@@ -18,7 +18,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 TensorCast = "02d47bb6-7ce6-556a-be16-bb1710789e2b"
 
 [compat]
-Caesar = "0.15, 0.16"
+# Caesar = "0.15, 0.16"
 ColorSchemes = "3"
 DocStringExtensions = "0.8, 0.9"
 GLMakie = "0.7, 0.8"

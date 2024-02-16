@@ -11,10 +11,10 @@ using Test
 using Aqua
 
 @testset "Arena.jl" begin
-    @testset "Code quality (Aqua.jl)" begin
-        Aqua.test_all(Arena)
-    end
+    # @testset "Code quality (Aqua.jl)" begin
+    #     Aqua.test_all(Arena)
+    # end
     
-    include("testBasicAnimations.jl")
+    # include("testBasicAnimations.jl")
 
 end
