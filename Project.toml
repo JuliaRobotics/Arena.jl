@@ -1,7 +1,7 @@
 name = "Arena"
 uuid = "53eacc40-fba4-5ad6-b4bb-526e51630e63"
 desc = "Visualization tools for Caesar.jl related SLAM solutions"
-version = "0.3.0"
+version = "0.3.1"
 
 [deps]
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
