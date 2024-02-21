@@ -17,6 +17,12 @@ RoME = "91fb55c2-4c03-5a59-ba21-f4ea956187b8"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 TensorCast = "02d47bb6-7ce6-556a-be16-bb1710789e2b"
 
+[weakdeps]
+Caesar = "62eebf14-49bc-5f46-9df9-f7b7ef379406"
+
+[extensions]
+ArenaCaesarExt = "Caesar"
+
 [compat]
 Aqua = "0.8"
 ColorSchemes = "3"
@@ -36,7 +42,8 @@ julia = "1.10"
 
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "Test"]
+test = ["Aqua", "Caesar", "DelimitedFiles", "Test"]
