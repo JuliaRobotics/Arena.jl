@@ -32,7 +32,7 @@ pc_fix = Caesar._PCL.PointCloud(X_fix);
 
 
 ##
-@testset "test plotPointCloud"
+@testset "test plotPointCloud" begin
 ##
 
 pl = Arena.plotPointCloud(pc_fix);
