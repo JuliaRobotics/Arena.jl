@@ -19,3 +19,11 @@ using Aqua
     # include("testBasicAnimations.jl")
 
 end
+
+
+## ==========================================================
+## test ArenaCaesarExt
+
+using Caesar
+
+include("testPlotPointCloud.jl")

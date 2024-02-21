@@ -17,14 +17,24 @@ RoME = "91fb55c2-4c03-5a59-ba21-f4ea956187b8"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 TensorCast = "02d47bb6-7ce6-556a-be16-bb1710789e2b"
 
+[weakdeps]
+Caesar = "62eebf14-49bc-5f46-9df9-f7b7ef379406"
+
+[extensions]
+ArenaCaesarExt = "Caesar"
+
 [compat]
 Aqua = "0.8"
+Caesar = "0.16"
 ColorSchemes = "3"
 Colors = "0.12"
+DelimitedFiles = "1"
 DistributedFactorGraphs = "0.23"
 DocStringExtensions = "0.9"
+Downloads = "1"
 GLMakie = "0.9"
 GeometryBasics = "0.4"
+LasIO = "0.3"
 Manifolds = "0.9"
 Pkg = "1"
 ProgressMeter = "1"
@@ -36,7 +46,10 @@ julia = "1.10"
 
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
+LasIO = "570499db-eae3-5eb6-bdd5-a5326f375e68"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "Test"]
+test = ["Aqua", "Caesar", "Downloads", "DelimitedFiles", "LasIO", "Test"]
