@@ -34,7 +34,7 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      - uses: julia-actions/cache@v1
+      - uses: julia-actions/cache@v2
       - run: sudo apt-get update && sudo apt-get install -y xorg-dev mesa-utils xvfb libgl1 freeglut3-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev xsettingsd x11-xserver-utils
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
@@ -56,7 +56,7 @@ jobs:
       - uses: julia-actions/setup-julia@v1
         with:
           version: '1'
-      - uses: julia-actions/cache@v1
+      - uses: julia-actions/cache@v2
       - run: sudo apt-get update && sudo apt-get install -y xorg-dev mesa-utils xvfb libgl1 freeglut3-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev xsettingsd x11-xserver-utils
       - name: Configure doc environment
         shell: julia --project=docs --color=yes {0}
