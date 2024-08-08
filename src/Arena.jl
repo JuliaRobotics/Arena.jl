@@ -22,15 +22,21 @@ using StaticArrays
 using ProgressMeter
 using DocStringExtensions
 
+# NOTE a lot of legacy code has been moved to the attic
 
-# a lot of legacy code has been moved to the attic
+export plotPoints
+export plotGraph3d
 
 # include("Exports.jl")
+include("services/PlotManifolds.jl")
 # include("services/PlotBoundingBox.jl")
 include("services/PlotFeatureTracks.jl")
 include("services/PlotHistogramGrid.jl")
 
 # support weakdeps exports
 include("../ext/Prototypes.jl")
+
+include("services/PlotGraphGeneric.jl")
+
 
 end # module
