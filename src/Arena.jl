@@ -25,7 +25,7 @@ using DocStringExtensions
 # NOTE a lot of legacy code has been moved to the attic
 
 export plotPoints
-export plotGraph3d
+export plot3d!
 
 # include("Exports.jl")
 include("services/PlotManifolds.jl")
@@ -38,6 +38,8 @@ include("../ext/Prototypes.jl")
 
 include("services/TodoConsolidate.jl")
 include("services/PlotGraphGeneric.jl")
+
+include("Deprecated.jl")
 
 
 end # module

@@ -4,9 +4,9 @@
 function plotPoints(
   ::typeof(SpecialOrthogonal(3)),
   ps::AbstractVector{<:AbstractMatrix{<:Real}};
-  color = :red
+  color = :red,
+  scene = Scene(),
 )
-  scene = Scene()
   cam3d!(scene)
   wireframe!(scene, Makie.Sphere( Point3f(0), 1.0), color=:gray)
   Makie.scale!(scene, 1.0, 1.0, 1.0)
