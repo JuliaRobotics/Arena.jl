@@ -36,6 +36,7 @@ include("services/PlotHistogramGrid.jl")
 # support weakdeps exports
 include("../ext/Prototypes.jl")
 
+include("services/TodoConsolidate.jl")
 include("services/PlotGraphGeneric.jl")
 
 
