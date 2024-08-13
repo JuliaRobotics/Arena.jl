@@ -52,18 +52,27 @@ function plot3d!(
     axislegend(ax1)
   end
 
-  _nxs(rot::AbstractMatrix{<:Real}) = rot[:,1]
-  _nys(rot::AbstractMatrix{<:Real}) = rot[:,2]
-  _nzs(rot::AbstractMatrix{<:Real}) = rot[:,3]
+  _getRot(::RotVelPos, p::ArrayPartition) = p.x[1]
+  _getRot(::Pose2, p::ArrayPartition) = p.x[2]
+  _getRot(::Pose3, p::ArrayPartition) = [p.x[2][1,1] p.x[2][1,2] 0; p.x[2][2,1] p.x[2][2,2] 0; 0 0 1.0] 
+  _getRot(::Position{N} where N, p::ArrayPartition) = diagm(ones(3))
+  
+  pos = []
+  nxs = []
+  nys = []
+  nzs = []
   if drawTriads
     # NOTE using val (not PPE), this will help show when PPEs are out of step with val
     for var in getVariable.(dfg, labels)
-      if RotVelPos() == getVariableType(var)
-        ps = calcMean(getBelief(var, solveKey))
-        Makie.arrows!(ax1, ps, _nxs(ps.x[1]); color=:red, linewidth, lengthscale, arrowsize)
-        Makie.arrows!(ax1, ps, _nys(ps.x[2]); color=:green, linewidth, lengthscale, arrowsize)
-        Makie.arrows!(ax1, ps, _nzs(ps.x[3]); color=:blue , linewidth, lengthscale, arrowsize)
-      end
+      ps = calcMean(getBelief(var, solveKey))
+      push!(pos, Point3f(ps.x[3]))
+      rot = _getRot(var,ps)
+      push!(nxs, Point3f(rot[:,1]))
+      push!(nys, Point3f(rot[:,2]))
+      push!(nzs, Point3f(rot[:,3]))
+      Makie.arrows!(ax1, pos, nxs; color=:red, linewidth, lengthscale, arrowsize)
+      Makie.arrows!(ax1, pos, nys; color=:green, linewidth, lengthscale, arrowsize)
+      # Makie.arrows!(ax1, pos, nzs; color=:blue , linewidth, lengthscale, arrowsize)
     end
   end
 
