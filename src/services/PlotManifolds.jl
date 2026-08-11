@@ -2,7 +2,7 @@
 
 
 function plotPoints(
-  ::typeof(SpecialOrthogonal(3)),
+  ::typeof(SpecialOrthogonalGroup(3)),
   Rs::AbstractVector{<:AbstractMatrix{<:Real}};
   color::C = :red,
   scene = Scene(),
