@@ -27,11 +27,14 @@ using DocStringExtensions
 export plotPoints
 export plot3d!
 
+##
+
 # include("Exports.jl")
 include("services/PlotManifolds.jl")
 # include("services/PlotBoundingBox.jl")
 include("services/PlotFeatureTracks.jl")
 include("services/PlotHistogramGrid.jl")
+include("services/PlotScatterAlign.jl") # FIXME, part of weakdeps ArenaCaesar
 
 # support weakdeps exports
 include("../ext/Prototypes.jl")
