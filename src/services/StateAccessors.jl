@@ -8,10 +8,10 @@ Get the primary belief point (first principal element, i.e. mean) for a variable
 Falls back to the first belief point if no principal elements (means) are stored.
 """
 function _meanPoint(state::DFG.State)
-  m = DFG.refMeans(state)
+  m = mean(getBelief(state))
   isempty(m) || return m[1]
-  pts = DFG.refPoints(state)
-  isempty(pts) || return pts[1]
+#   pts = DFG.refPoints(state)
+#   isempty(pts) || return pts[1]
   return error("State :$(state.label) has no belief means or points to plot")
 end
 _meanPoint(fg::AbstractDFG, vlb::Symbol, solveKey::Symbol = :parametric) = _meanPoint(getState(fg, vlb, solveKey))
@@ -21,7 +21,7 @@ _meanPoint(fg::AbstractDFG, vlb::Symbol, solveKey::Symbol = :parametric) = _mean
 
 Get the primary covariance (first principal form) for a variable state.
 """
-_covariance(state::DFG.State) = DFG.refCovariances(state)[1]
+_covariance(state::DFG.State) = cov(getBelief(state))
 _covariance(fg::AbstractDFG, vlb::Symbol, solveKey::Symbol = :parametric) = _covariance(getState(fg, vlb, solveKey))
 
 # list variable labels matching a label regex (replaces old `ls(fg, r"^x")`)

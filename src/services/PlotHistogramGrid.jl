@@ -3,7 +3,8 @@
 const EMPTY_AXES_DICT = Dict{Symbol, Float64}(:xmin=>99999999,:xmax=>-99999999,:ymin=>99999999,:ymax=>-99999999)
 
 
-_getBeliefRange(s::MvNormal; extend=0.1) = [(s.μ[1]-3*s.Σ[1,1]) (s.μ[1]+3*s.Σ[1,1]); (s.μ[2]-3*s.Σ[2,2]) (s.μ[2]+3*s.Σ[2,2])]
+_getBeliefRange(s::MvNormal; extend::Number=0.1) = [(s.μ[1]-3*s.Σ[1,1]) (s.μ[1]+3*s.Σ[1,1]); (s.μ[2]-3*s.Σ[2,2]) (s.μ[2]+3*s.Σ[2,2])]
+_getBeliefRange(s::HomotopyDensity; extend::Number=0.1) = _getBeliefRange(_getBelief2D(s); extend)
 
 """
     $SIGNATURES
@@ -30,7 +31,7 @@ DevNotes
 - TODO, allow `tags` as filter too.
 """
 function getRangeCartesian(
-  P::MvNormal;
+  P::Union{<:HomotopyDensity,<:MvNormal};
   xmin::Real=99999999,
   xmax::Real=-99999999,
   ymin::Real=99999999,
@@ -104,7 +105,7 @@ end
 
 
 function getRange(
-  P::MvNormal;
+  P::Union{<:HomotopyDensity,<:MvNormal};
   extend::Float64=0.2,
 )
   # Reuse a legacy method
@@ -153,6 +154,9 @@ function _makeDens2D(
 )
   return MvNormal(_P.μ[1:2], _P.Σ[1:2,1:2])
 end
+_makeDens2D(
+  _P::HomotopyDensity
+) = _makeDens2D(_getBelief2D(_P))
 
 function histBelief2D!(
   img::AbstractMatrix, 
@@ -177,7 +181,7 @@ function histBeliefs2D!(
   extend::Real=0.2,
   img::AbstractMatrix = zeros(N,N),
   coords = 0 < length(PP) ? getRange(PP[1]; extend) : EMPTY_AXES_DICT,
-) where {T<:MvNormal}
+) where {T<:Union{<:HomotopyDensity,<:MvNormal}}
   #
   for P in PP
     _c = getRange(P; extend)
@@ -252,7 +256,7 @@ function plotBelief_Histogram(
   title="Histogram, N=$N, of $(length(PP)) beliefs",
   xlabel="x-axis",
   ylabel="y-axis",
-) where {T<:MvNormal}
+) where {T<:Union{<:HomotopyDensity,<:MvNormal}}
   #
   img,coords = histBeliefs2D!(PP; N, verbose)
   xrg = range(coords[:xmin],coords[:xmax];length=N)
