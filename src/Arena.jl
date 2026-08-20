@@ -49,7 +49,7 @@ include("services/TodoConsolidate.jl")
 include("services/PlotSLAM2D.jl")
 include("services/PlotGraphGeneric.jl")
 
-include("Deprecated.jl")
+# include("Deprecated.jl")
 
 
 end # module

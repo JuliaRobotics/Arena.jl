@@ -5,6 +5,7 @@ module ArenaCaesarExt
 using GLMakie
 using ColorSchemes
 using TensorCast
+using DocStringExtensions
 
 using Caesar
 import Caesar._PCL as _PCL
@@ -14,5 +15,8 @@ import Arena: plotPointCloud
 
 
 include("services/PlotPointCloudMap.jl")
+include("services/PlotScatterAlign.jl")
+
+
 
 end
