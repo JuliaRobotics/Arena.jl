@@ -11,7 +11,7 @@ using Caesar
 import Caesar._PCL as _PCL
 
 using Arena
-import Arena: plotPointCloud
+import Arena: plotPointCloud, plotScatterAlign
 
 
 include("services/PlotPointCloudMap.jl")
