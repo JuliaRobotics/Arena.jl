@@ -4,6 +4,7 @@ desc = "Visualization tools for Caesar.jl related SLAM solutions"
 version = "0.4.0"
 
 [deps]
+ApproxManifoldProducts = "9bbbb610-88a1-53cd-9763-118ce10c1f89"
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
 DistributedFactorGraphs = "b5cc3c7e-6572-11e9-2517-99fb8daf2f04"
@@ -30,6 +31,7 @@ Caesar = "62eebf14-49bc-5f46-9df9-f7b7ef379406"
 ArenaCaesarExt = "Caesar"
 
 [compat]
+ApproxManifoldProducts = "0.15.8"
 Aqua = "0.8"
 Caesar = "0.16"
 ColorSchemes = "3"

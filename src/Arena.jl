@@ -30,6 +30,8 @@ using ProgressMeter
 using DocStringExtensions
 import JSON
 
+import ApproxManifoldProducts: HomotopyDensity
+
 # NOTE a lot of legacy code has been moved to the attic
 
 export plotPoints
