@@ -19,8 +19,17 @@ function plotBlobsImageTracks!(
     height = size(img,1)
   end
 
-  eb = getData(dfg,vlb,key)
-  img_tracks = JSON3.read(String(eb[2]), Dict{Int, Vector{Vector{Float32}}})
+  # resolve the blobentry label (Regex keys select the first matching entry)
+  entry_lbl = if key isa Symbol
+    key
+  else
+    lbls = listVariableBlobentries(dfg, vlb)
+    idx = findfirst(contains(key) ∘ string, lbls)
+    isnothing(idx) && error("No blobentry matching $key found on variable $vlb")
+    lbls[idx]
+  end
+  _, blob = DFG.loadVariableBlob(dfg, vlb, entry_lbl)
+  img_tracks = JSON.parse(String(blob), Dict{Int, Vector{Vector{Float32}}})
   
   len = length(img_tracks)
   UU = [Vector{Float64}() for k in 1:len]

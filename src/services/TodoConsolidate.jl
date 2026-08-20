@@ -2,38 +2,37 @@
 
 #TODO sort out and move to Arena.jl
 function plotPose2Point2Bearing(fg, 
-  factor_labels=lsfTypesDict(fg)[:Pose2Point2Bearing];
+  factor_labels=DFG.lsfTypesDict(fg)[:Pose2Point2Bearing];
   len = 3,
+  label = "Pose2Point2Bearing",
   kwargs...
 )
   vals = map(factor_labels) do factor_label
-      Z = getFactorFunction(fg, factor_label).Z
+      Z = getObservation(fg, factor_label).Z
       fr = getVariableOrder(fg, factor_label)[1]
-      pose = getVariableSolverData(fg, fr, :parametric).val[1]
-      M = SpecialOrthogonal(2)
-      α = log(M, getPointIdentity(M), pose.x[2])[2]
+      pose = _meanPoint(fg, fr, :parametric)
+      α = _yaw(pose.x[2])
       θ = Z.μ + α
       pnt = Point2f(cos(θ), sin(θ)) * len
       (Point2f(pose[1:2]), pnt)
   end
   
-  return Makie.arrows!(first.(vals), last.(vals); kwargs...)
+  return Makie.arrows!(first.(vals), last.(vals); label, kwargs...)
 end
 
 
 function plotPose2Point2BearingRev(fg, 
-  factor_labels=lsfTypesDict(fg)[:Pose2Point2Bearing];
+  factor_labels=DFG.lsfTypesDict(fg)[:Pose2Point2Bearing];
   len = 3,
   kwargs...
 )
   vals = map(factor_labels) do factor_label
-      Z = getFactorFunction(fg, factor_label).Z
+      Z = getObservation(fg, factor_label).Z
       fr,to = getVariableOrder(fg, factor_label)
-      pose = getVariableSolverData(fg, fr, :parametric).val[1]
-      point = getVariableSolverData(fg, to, :parametric).val[1]
+      pose = _meanPoint(fg, fr, :parametric)
+      point = _meanPoint(fg, to, :parametric)
       @show to
-      M = SpecialOrthogonal(2)
-      α = log(M, getPointIdentity(M), pose.x[2])[2]
+      α = _yaw(pose.x[2])
       θ = Z.μ + α
       pnt_dir = Point2f(cos(θ), sin(θ)) * len
       # point from and point direction
@@ -46,22 +45,20 @@ end
 
 
 function plotPose3Pose3UnitTransDirection(fg, 
-  factor_labels=lsfTypesDict(fg)[:Pose3Pose3UnitTrans];
+  factor_labels=DFG.lsfTypesDict(fg)[:Pose3Pose3UnitTrans];
   len = 3,
   rev=true,
   kwargs...
 )
-  M = SpecialEuclidean(3)
-  ϵ = getPointIdentity(M)
   vals = map(factor_labels) do factor_label
-      Z = getFactorFunction(fg, factor_label).Z
+      Z = getObservation(fg, factor_label).Z
       fr,to = getVariableOrder(fg, factor_label)
       if !rev
-          fr_pose = getVariableSolverData(fg, fr, :parametric).val[1]
+          fr_pose = _meanPoint(fg, fr, :parametric)
           dir = fr_pose.x[2] * Point3f(Z.μ[1:3])
           (Point3f(fr_pose[1:3]), dir*len)
       else
-          to_pose = getVariableSolverData(fg, to, :parametric).val[1]
+          to_pose = _meanPoint(fg, to, :parametric)
           dir = to_pose.x[2] * Point3f(Z.μ[1:3])
           (Point3f(to_pose[1:3]), -dir*len)
       end
@@ -73,22 +70,22 @@ end
 
 
 function plot2dPose3Pose3UnitTransDirection(fg, 
-  factor_labels=lsfTypesDict(fg)[:Pose3Pose3UnitTrans];
+  factor_labels=DFG.lsfTypesDict(fg)[:Pose3Pose3UnitTrans];
   len = 3,
   rev=true,
   kwargs...
 )
   vals = map(factor_labels) do factor_label
-      Z = getFactorFunction(fg, factor_label).Z
+      Z = getObservation(fg, factor_label).Z
       fr,to = getVariableOrder(fg, factor_label)
       if !rev
-          fr_pose = getVariableSolverData(fg, fr, :parametric).val[1]
+          fr_pose = _meanPoint(fg, fr, :parametric)
           dir = fr_pose.x[2] * Point3f(Z.μ[1:3])
           (Point2f(fr_pose[1:2]), Point2f(dir[1:2]*len))
       else
           #TODO is this correct
-          fr_pose = getVariableSolverData(fg, fr, :parametric).val[1]
-          to_pose = getVariableSolverData(fg, to, :parametric).val[1]
+          fr_pose = _meanPoint(fg, fr, :parametric)
+          to_pose = _meanPoint(fg, to, :parametric)
           dir = fr_pose.x[2] * Point3f(Z.μ[1:3])
           (Point2f(to_pose[1:3]), -Point2f(dir[1:2])*len)
       end
@@ -98,37 +95,33 @@ function plot2dPose3Pose3UnitTransDirection(fg,
 end
 
 function plotPose2Pose2(fg, 
-  factor_labels=lsfTypesDict(fg)[:Pose2Pose2];
+  factor_labels=DFG.lsfTypesDict(fg)[:Pose2Pose2];
   len = 3,
+  label = "Pose2Pose2",
   kwargs...
 )
   vals = map(factor_labels) do factor_label
-      M = SpecialEuclidean(2)
-      ϵ = getPointIdentity(M)
-      
       fr = getVariableOrder(fg, factor_label)[1]
-      p = getVariableSolverData(fg, fr, :parametric).val[1]
+      p = _meanPoint(fg, fr, :parametric)
       
-      fct = getFactor(fg, factor_label)
-      X, iΣ = IIF.getFactorMeasurementParametric(fct)
+      Z = getObservation(fg, factor_label).Z
+      μ = mean(Z) # tangent coordinates [x; y; θ]
       
-      # pθ = log(M, ϵ, p.x[2])[2]
+      # apply body-frame translation offset of the relative measurement
+      t = p.x[1]
+      R = p.x[2]
+      q_t = t + R * μ[1:2]
 
-      ϵX = exp(M, ϵ, X)
-      q = Manifolds.compose(M, p, ϵX)    
-      # qθ
-
-      (Point2f(p[1:2]), Point2f(q[1:2]))
+      (Point2f(t...), Point2f(q_t...))
   end
   
-  return Makie.linesegments!(vals; kwargs...)
+  return Makie.linesegments!(vals; label, kwargs...)
 end
 
 function points2(fg, varlabels=ls(fg);  solveKey = :parametric)
   ps = map(varlabels) do v
-      val = getVal(fg, v; solveKey)[1]
-      # val = getPPESuggested(fg, v, :parametric)
-      if getVariableType(fg, v) == RotVelPos()
+      val = _meanPoint(fg, v, solveKey)
+      if getStateKind(fg, v) isa RotVelPos
           # Point2f(val.x[3][1:2])
           Point2f(val.x[3][2:3])
       else 
@@ -154,9 +147,8 @@ end
 
 function points3(fg, varlabels=ls(fg))
   ps = map(varlabels) do v
-      val = getVal(fg, v; solveKey = :parametric)[1]
-      # val = getPPESuggested(fg, v, :parametric)
-      if getVariableType(fg, v) == RotVelPos()
+      val = _meanPoint(fg, v, :parametric)
+      if getStateKind(fg, v) isa RotVelPos
           Point3f(val.x[3][1:3])
       else 
           Point3f(val[1:3])
@@ -167,31 +159,29 @@ end
 
 function heading(fg, varlabels=ls(fg))
   ps = map(varlabels) do v
-      val = getVal(fg, v; solveKey = :parametric)[1]
-      # val = getPPESuggested(fg, v, :parametric)
-      if getVariableType(fg, v) == RotVelPos()
-          Euler(TU.SO3(Matrix(val.x[1]))).Y
+      val = _meanPoint(fg, v, :parametric)
+      if getStateKind(fg, v) isa RotVelPos
+          _yaw(Matrix(val.x[1]))
       else 
-          Euler(TU.SO3(Matrix(val.x[2]))).Y
+          _yaw(Matrix(val.x[2]))
       end
   end
   return ps
 end
 
-function headings(fg, labels=ls(fg))
+function headings(fg, labels=ls(fg); solveKey=:parametric)
   θs = map(labels) do v
-      val = getVal(fg, v; solveKey = :parametric)[1]
+      val = _meanPoint(fg, v, solveKey)
       # atan(val.x[2][2],val.x[2][1])+pi
       atan(val.x[2][2],val.x[2][1])
   end
   return θs
 end
 
-function vels3(fg, varlabels=ls(fg, r"^x"))
+function vels3(fg, varlabels=_ls(fg, r"^x"))
   ps = map(varlabels) do v
-      val = getVal(fg, v; solveKey = :parametric)[1]
-      # val = getPPESuggested(fg, v, :parametric)
-      if getVariableType(fg, v) == RotVelPos()
+      val = _meanPoint(fg, v, :parametric)
+      if getStateKind(fg, v) isa RotVelPos
           Point3f(val.x[2][1:3])
       else 
           error("FIXME")
@@ -200,9 +190,9 @@ function vels3(fg, varlabels=ls(fg, r"^x"))
   return ps
 end
 
-function biases6(fg, varlabels=ls(fg, r"^b"))
+function biases6(fg, varlabels=_ls(fg, r"^b"))
   ps = map(varlabels) do v
-      getVal(fg, v; solveKey = :parametric)[1]
+      _meanPoint(fg, v, :parametric)
   end
   return ps
 end
@@ -235,10 +225,10 @@ function ellipsePoints(μ, Σ; n_ellipse_vertices = 100)
   # end
 end
 
-function ellipsePoints(v::DFGVariable; n_ellipse_vertices = 100, solveKey=:parametric)
-  vnd = getSolverData(v, solveKey)
-  μ = vnd.val[1][1:2]
-  Σ = vnd.bw[1:2,1:2]
+function ellipsePoints(v::VariableDFG; n_ellipse_vertices = 100, solveKey=:parametric)
+  state = getState(v, solveKey)
+  μ = _meanPoint(state)[1:2]
+  Σ = _covariance(state)[1:2,1:2]
   return ellipsePoints(μ, Σ)
 end
 
@@ -251,21 +241,21 @@ end
 
 function plot2d!(
   fg,
-  vsyms = ls(fg, r"^x");
+  vsyms = _ls(fg, r"^x");
   # linewidth = 0.025,
   # lengthscale=0.15f0,
   # arrowsize = Vec3f(0.05, 0.05, 0.1),
   solveKey=:parametric,
 )
 
-  ps = map(enumerate(vsyms)) do (i,v)
-      val = getVal(fg, v; solveKey)[1]
+  ps = map(vsyms) do v
+      val = _meanPoint(fg, v, solveKey)
       Point2f(val[1:2]...)
   end
 
   nxs = map(vsyms) do v
-      val = getVal(fg, v; solveKey)[1] 
-      Point2f(val.x[2][:,1]...)
+      val = _meanPoint(fg, v, solveKey)
+      Point2f(val.x[2][1:2,1]...)
   end
 
   # Makie.arrows!(ps, nxs; color=:red, linewidth, lengthscale, arrowsize)
@@ -310,33 +300,37 @@ end
 
 
 
-function plotPose2s!(fg::AbstractDFG, labels = ls(fg, r"x"); 
+function plotPose2s!(fg::AbstractDFG, labels = _ls(fg, r"x"); 
   solveKey=:parametric,
-  markersize=10
+  markersize=10,
+  label="poses ($(length(labels)))",
+  kwargs...
 )
 
   # f.axis.aspect[] = 1.0
   path_x = map(labels) do v
-      val = getVal(fg, v; solveKey)[1]
+      val = _meanPoint(fg, v, solveKey)
       val[1]
   end
   path_y = map(labels) do v
-      val = getVal(fg, v; solveKey)[1]
+      val = _meanPoint(fg, v, solveKey)
       val[2]
   end
 
   θs = map(labels) do v
-      val = getVal(fg, v; solveKey)[1]
+      val = _meanPoint(fg, v, solveKey)
       # atan(val.x[2][2],val.x[2][1])+pi # NOTE sure it used to be offset look fixed?
       atan(val.x[2][2],val.x[2][1])
   end
-  scatter!(path_x, path_y; rotations = θs, markersize, marker = '►')
+  scatter!(path_x, path_y; rotation = θs, markersize, marker = '➤', label, kwargs...)  #⮊
   # lines!(path_x,path_y, color = range(0, 1, length=100), colormap = :darkrainbow)
 end
 
 function plotPose2s!(points; 
   solveKey=:parametric,
-  markersize=10
+  markersize=10,
+  label="poses ($(length(points)))",
+  kwargs...
 )
 
   # f.axis.aspect[] = 1.0
@@ -347,6 +341,6 @@ function plotPose2s!(points;
       # atan(p.x[2][2], p.x[2][1])+pi
       atan(p.x[2][2], p.x[2][1])
   end
-  scatter!(path_x, path_y; rotations = θs, markersize, marker = '►')
+  scatter!(path_x, path_y; rotation = θs, markersize, marker = '►', label, kwargs...)
   # lines!(path_x,path_y, color = range(0, 1, length=100), colormap = :darkrainbow)
 end
