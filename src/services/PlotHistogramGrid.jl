@@ -3,8 +3,20 @@
 const EMPTY_AXES_DICT = Dict{Symbol, Float64}(:xmin=>99999999,:xmax=>-99999999,:ymin=>99999999,:ymax=>-99999999)
 
 
-_getBeliefRange(s::ManifoldKernelDensity; extend=0.1) = getKDERange(s;extend)
-_getBeliefRange(s::MvNormal; extend=0.1) = [(s.μ[1]-3*s.Σ[1,1]) (s.μ[1]+3*s.Σ[1,1]); (s.μ[2]-3*s.Σ[2,2]) (s.μ[2]+3*s.Σ[2,2])]
+_getBeliefRange(s::MvNormal; extend::Number=0.1) = [(s.μ[1]-3*s.Σ[1,1]) (s.μ[1]+3*s.Σ[1,1]); (s.μ[2]-3*s.Σ[2,2]) (s.μ[2]+3*s.Σ[2,2])]
+_getBeliefRange(s::HomotopyDensity; extend::Number=0.1) = _getBeliefRange(_getBelief2D(s); extend)
+
+"""
+    $SIGNATURES
+
+Get a 2D Gaussian belief (in the first two coordinates) for a variable state, DFG v0.29 API.
+"""
+function _getBelief2D(state::DFG.State)
+  μpt = _meanPoint(state)
+  Σ = _covariance(state)
+  return MvNormal([μpt[1]; μpt[2]], Σ[1:2, 1:2])
+end
+_getBelief2D(fg::AbstractDFG, vlb::Symbol, solveKey::Symbol = :default) = _getBelief2D(getState(fg, vlb, solveKey))
 
 
 """
@@ -19,7 +31,7 @@ DevNotes
 - TODO, allow `tags` as filter too.
 """
 function getRangeCartesian(
-  P::Union{<:ManifoldKernelDensity,<:MvNormal};
+  P::Union{<:HomotopyDensity,<:MvNormal};
   xmin::Real=99999999,
   xmax::Real=-99999999,
   ymin::Real=99999999,
@@ -54,7 +66,8 @@ end
 function getRangeCartesian(
   dfg::AbstractDFG,
   regexFilter::Union{Nothing, Regex}=nothing;
-  varList = listVariables(dfg, regexFilter),
+  solveKey::Symbol = :default,
+  varList = isnothing(regexFilter) ? listVariables(dfg) : _ls(dfg, regexFilter),
   factorList = Symbol[],
   xmin::Real=99999999,
   xmax::Real=-99999999,
@@ -70,7 +83,7 @@ function getRangeCartesian(
   # which variables to consider
   # find the cartesian range over all the varList variables
   for vsym in varList
-    lran = getRangeCartesian(getVariable(dfg, vsym) |> getBelief; force, xmin,xmax,ymin,ymax,kw...)
+    lran = getRangeCartesian(_getBelief2D(dfg, vsym, solveKey); force, xmin,xmax,ymin,ymax,kw...)
     xmin = lran[1,1] < xmin ? lran[1,1] : xmin
     ymin = lran[2,1] < ymin ? lran[2,1] : ymin
     xmax = xmax < lran[1,2] ? lran[1,2] : xmax
@@ -79,7 +92,7 @@ function getRangeCartesian(
 
   # FIXME only works for very limited set of factors, has .Z and complies with Position{2}
   for fsym in factorList
-    lran = getRangeCartesian(getFactorType(dfg, fsym).Z; force, xmin,xmax,ymin,ymax,kw...)
+    lran = getRangeCartesian(getObservation(dfg, fsym).Z; force, xmin,xmax,ymin,ymax,kw...)
     xmin = lran[1,1] < xmin ? lran[1,1] : xmin
     ymin = lran[2,1] < ymin ? lran[2,1] : ymin
     xmax = xmax < lran[1,2] ? lran[1,2] : xmax
@@ -92,7 +105,7 @@ end
 
 
 function getRange(
-  P::Union{<:ManifoldKernelDensity,<:MvNormal};
+  P::Union{<:HomotopyDensity,<:MvNormal};
   extend::Float64=0.2,
 )
   # Reuse a legacy method
@@ -111,12 +124,13 @@ end
 function getRange(
   dfg::AbstractDFG,
   regexFilter::Union{Nothing, Regex}=nothing;
-  varList = listVariables(dfg, regexFilter),
+  solveKey::Symbol = :default,
+  varList = isnothing(regexFilter) ? listVariables(dfg) : _ls(dfg, regexFilter),
   factorList = Symbol[],
   extend::Float64=0.2,
 )
   # Reuse a legacy method
-  axes = getRangeCartesian(dfg, regexFilter; varList, factorList, extend)
+  axes = getRangeCartesian(dfg, regexFilter; solveKey, varList, factorList, extend)
   
   coords = Dict{Symbol, Float64}()
 
@@ -125,7 +139,7 @@ function getRange(
   coords[:ymin] = axes[2,1]
   coords[:ymax] = axes[2,2]
   if 0 < length(varList)
-    if typeof(getVariableType(dfg, varList[1])).name.name in [:Pose3; :Position3; :RotVelPos]
+    if typeof(getStateKind(dfg, varList[1])).name.name in [:Pose3; :Position3; :RotVelPos]
       coords[:zmin] = 99999999
       coords[:zmax] = -99999999
     end
@@ -136,21 +150,13 @@ end
 
 
 function _makeDens2D(
-  _P::ManifoldKernelDensity
-)
-  P_ = marginal(_P,[1;2])
-  P__ = manikde!(
-    Position2, # TODO, do better than just TranslationGroup(2)
-    getPoints(P_,true),
-    bw=getBW(P_)[:,1]
-  )
-  P__
-end
-function _makeDens2D(
   _P::MvNormal
 )
-  s->pdf(MvNormal(_P.μ[1:2], _P.Σ[1:2,1:2]),s[:])
+  return MvNormal(_P.μ[1:2], _P.Σ[1:2,1:2])
 end
+_makeDens2D(
+  _P::HomotopyDensity
+) = _makeDens2D(_getBelief2D(_P))
 
 function histBelief2D!(
   img::AbstractMatrix, 
@@ -158,15 +164,12 @@ function histBelief2D!(
   x::Real, 
   j::Integer, 
   y::Real, 
-  P::Union{<:ManifoldKernelDensity, <:MvNormal}
+  P::MvNormal
 )
   P_ = _makeDens2D(P)
   roi = _getBeliefRange(P_; extend=0.3)
   if (roi[1,1] <= x <= roi[1,2]) && (roi[2,1] <= y <= roi[2,2])
-    ev = zeros(2,1)
-    ev[1,1] = x
-    ev[2,1] = y
-    img[i,j] += P_(ev)[1]
+    img[i,j] += pdf(P_, [x; y])
   end
   nothing
 end
@@ -178,7 +181,7 @@ function histBeliefs2D!(
   extend::Real=0.2,
   img::AbstractMatrix = zeros(N,N),
   coords = 0 < length(PP) ? getRange(PP[1]; extend) : EMPTY_AXES_DICT,
-) where {T<:Union{<:ManifoldKernelDensity,<:MvNormal}}
+) where {T<:Union{<:HomotopyDensity,<:MvNormal}}
   #
   for P in PP
     _c = getRange(P; extend)
@@ -224,6 +227,7 @@ histBeliefs2D!(
 
 function histBeliefs2D(
   dfg::AbstractDFG;
+  solveKey::Symbol = :default,
   varList = listVariables(dfg),
   factorList = Symbol[],
   N::Integer = 100,
@@ -233,26 +237,11 @@ function histBeliefs2D(
 
   NNv = N*N*length(varList)
   verbose && @info("# hist tasks = $NNv")
-  # p = Progress(NNv; dt=1, desc="computing variable's histogram")
-  # tasks = Vector{Task}(undef, NNv)
-  # n = 0
-  PP = getBelief.(getVariable.(dfg,varList))
+  PP = map(v->_getBelief2D(dfg, v, solveKey), varList)
   img, coords = histBeliefs2D!(PP; N, verbose)
 
-  P2 = (getFactorType.(dfg,factorList) .|> s->s.Z)
+  P2 = (getObservation.(dfg,factorList) .|> s->s.Z)
   img, coords = histBeliefs2D!(P2; N, verbose, img, coords)
-  # @showprogress desc="computing factor's histogram" dt=1 for 
-  #                                                   (i,x) in enumerate(range(coords[:xmin],coords[:xmax];length=N)), 
-  #                                                   (j,y) in enumerate(range(coords[:ymin],coords[:ymax];length=N))
-  #   P__ = _makeDens2D(P)
-  #   roi = _getBeliefRange(P__; extend=0.3)
-  #   if (roi[1,1] <= x <= roi[1,2]) && (roi[2,1] <= y <= roi[2,2])
-  #     ev = zeros(2,1)
-  #     ev[1,1] = x
-  #     ev[2,1] = y
-  #     img[i,j] += P__(ev)
-  #   end
-  # end
 
   return img, coords
 end
@@ -267,9 +256,9 @@ function plotBelief_Histogram(
   title="Histogram, N=$N, of $(length(PP)) beliefs",
   xlabel="x-axis",
   ylabel="y-axis",
-) where {T<: Union{<:ManifoldKernelDensity, <:MvNormal}}
+) where {T<:Union{<:HomotopyDensity,<:MvNormal}}
   #
-  img,coords = histBeliefs2D(PP; N, verbose)
+  img,coords = histBeliefs2D!(PP; N, verbose)
   xrg = range(coords[:xmin],coords[:xmax];length=N)
   yrg = range(coords[:ymin],coords[:ymax];length=N)
   image(
@@ -282,13 +271,13 @@ function plotBelief_Histogram(
   )
 end
 
-const plotBeliefs_Histogram(w...;kw...) = plotBelief_Histogram(w...;kw...)
+plotBeliefs_Histogram(w...;kw...) = plotBelief_Histogram(w...;kw...)
 
 plotBelief_Histogram(
   P::T,
   w...;
   kw...
-) where {T<:Union{<:ManifoldKernelDensity, <:MvNormal}} = plotBeliefs_Histogram(
+) where {T<:MvNormal} = plotBelief_Histogram(
   T[P;],
   w...;
   kw...
@@ -297,18 +286,19 @@ plotBelief_Histogram(
 
 function plotSLAM2D_Histogram(
   dfg::AbstractDFG;
+  solveKey::Symbol = :default,
   varList::AbstractVector{Symbol}=listVariables(dfg),
   factorList = Symbol[],
   N::Integer=200,
   verbose::Bool=true,
   colormap=:dense, #:viridis,
   colorscale=sqrt, #identity, #log,
-  title=dfg.sessionLabel,
+  title=string(getGraphLabel(dfg)),
   xlabel="x-axis",
   ylabel="y-axis",
 )
   verbose && @show(varList)
-  img,coords = histBeliefs2D(dfg;varList, factorList, N, verbose)
+  img,coords = histBeliefs2D(dfg; solveKey, varList, factorList, N, verbose)
   xrg = range(coords[:xmin],coords[:xmax];length=N)
   yrg = range(coords[:ymin],coords[:ymax];length=N)
   image(
